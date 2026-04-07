@@ -24,9 +24,6 @@ A premium, production-ready portfolio website featuring a cinematic horizontal t
 ### Installation
 
 1. **Clone and navigate to the project:**
-```bash
-cd C:\Users\matth\Personal\Software\hiromix
-```
 
 2. **Install dependencies:**
 ```bash
@@ -80,7 +77,7 @@ hiromix/
 └── package.json                 # Dependencies and scripts
 ```
 
-## 🎯 Key Technologies
+## Key Technologies
 
 - **Framework:** Next.js 14+ (App Router)
 - **Language:** TypeScript 5+
@@ -91,7 +88,7 @@ hiromix/
 - **Images:** Unsplash API (via Next.js Image)
 - **Icons:** Lucide React
 
-## 🎨 Customization
+## Customization
 
 ### Adding Your Own Content
 
@@ -149,7 +146,7 @@ Edit the header text in `src/components/HeroHeader.tsx`:
 - `Space/Enter` - Activate buttons
 - `Esc` - Close dropdowns
 
-## 🎭 Performance Features
+## Performance Features
 
 - **Lazy Loading** - Images and videos load on demand
 - **Code Splitting** - Dynamic imports for optimal bundles
@@ -157,14 +154,14 @@ Edit the header text in `src/components/HeroHeader.tsx`:
 - **Responsive Images** - WebP/AVIF with Next.js Image
 - **Reduced Motion** - Respects user preferences
 
-## 📱 Browser Support
+## Browser Support
 
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
-## 🚢 Deployment
+## Deployment
 
 ### Vercel (Recommended)
 
@@ -181,7 +178,7 @@ npm run build
 
 Deploy the `.next` folder to your hosting provider.
 
-## 📝 Environment Variables
+## Environment Variables
 
 Create a `.env.local` file for custom configuration:
 
@@ -190,13 +187,13 @@ Create a `.env.local` file for custom configuration:
 NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=your_key_here
 ```
 
-## 🎬 Credits
+## Credits
 
 - **Design Inspiration:** Museum archives, editorial design, luxury fashion websites
 - **Images:** Unsplash API
 - **Sample Audio:** SoundHelix (royalty-free)
 
-## 📄 License
+## License
 
 This project is for portfolio/educational use. Replace all placeholder content with your own before production deployment.
 
