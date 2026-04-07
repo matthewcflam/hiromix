@@ -111,11 +111,43 @@ export default function StickyNote({
         >
           {/* Sticky note */}
           <motion.div
-            className="relative w-48 h-48 shadow-lg"
+            className="relative w-48 h-48 shadow-lg overflow-hidden"
             style={{
               background: getColorGradient(color),
             }}
           >
+            {/* Paper texture overlay */}
+            {(color === '#FEF08A' || color.toLowerCase() === 'yellow') && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: 'url("/assets/yellownote.jpg")',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  mixBlendMode: 'multiply',
+                  opacity: 0.3,
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                }}
+              />
+            )}
+            {(color === '#BBF7D0' || color.toLowerCase() === 'green') && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: 'url("/assets/greennote.jpg")',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  mixBlendMode: 'multiply',
+                  opacity: 0.3,
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                }}
+              />
+            )}
+            
             {/* Text area */}
             <textarea
               value={text}
@@ -124,13 +156,14 @@ export default function StickyNote({
               onBlur={() => setIsFocused(false)}
               placeholder="Type here..."
               disabled={isDeleteMode}
-              className={`w-full h-full p-4 bg-transparent resize-none outline-none text-gray-800 placeholder-gray-400 ${
+              className={`relative w-full h-full p-4 bg-transparent resize-none outline-none text-gray-800 placeholder-gray-400 ${
                 isDeleteMode ? 'pointer-events-none' : ''
               }`}
               style={{
                 fontFamily: "'Indie Flower', 'Comic Sans MS', cursive",
                 fontSize: '14px',
                 lineHeight: '1.4',
+                zIndex: 2,
               }}
             />
           </motion.div>

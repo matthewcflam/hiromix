@@ -20,24 +20,132 @@ interface Note {
   rotation: number;
 }
 
-// Specific positions with consistent 32px gaps (edge-to-edge spacing) - larger sizes
-// These are base values that will be scaled based on viewport height
-const GAP = 32;
-const BASE_HEIGHT = 900; // Base viewport height for calculations
-const imagePositions = [
-  { x: 0, y: 160, width: 235, height: 580 },         // Image 1 (40% larger)
-  { x: 0 + 235 + GAP, y: 240, width: 370, height: 336 },       // 267
-  { x: 267 + 370 + GAP, y: 180, width: 380, height: 504 },     // 669
-  { x: 669 + 380 + GAP, y: 100, width: 375, height: 694 },      // 1081
-  { x: 1081 + 375 + GAP, y: 200, width: 370, height: 482 },     // 1488
-  { x: 1488 + 370 + GAP, y: 260, width: 280, height: 280 },    // 1890
-  { x: 1890 + 280 + GAP, y: 150, width: 403, height: 538 },    // 2202
-  { x: 2202 + 403 + GAP, y: 220, width: 347, height: 381 },    // 2637
-  { x: 2637 + 347 + GAP, y: 130, width: 314, height: 616 },     // 3016
-  { x: 3016 + 314 + GAP, y: 190, width: 414, height: 515 },    // 3362
-];
+// Image size configurations based on width type
+const IMAGE_SIZES = {
+  portrait: { width: 300, height: 400 },
+  square: { width: 300, height: 300 },
+  landscape: { width: 400, height: 300 },
+};
+
+const FIXED_GAP = 300; // Equal whitespace between all photos
+const TICKS_BETWEEN_PHOTOS = 30; // Fixed number of ticks between each photo
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+interface TickData {
+  x: number; // Use integer X position for both deduplication AND rendering
+  isMonthStart: boolean;
+  monthLabel?: string;
+}
+
+// Calculate positions with equal spacing and generate editorial ticks
+const calculateTimelinePositions = (items: TimelineItem[]) => {
+  if (items.length === 0) return { 
+    positions: [], 
+    totalWidth: 1000, 
+    ticks: [],
+  };
+
+  // Sort items by date
+  const sortedItems = [...items].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  const positions: Array<{ 
+    x: number; 
+    y: number; 
+    width: number; 
+    height: number;
+    item: TimelineItem;
+  }> = [];
+  
+  // Use Map to deduplicate ticks by X position (rounded to avoid floating point issues)
+  const tickMap = new Map<number, TickData>();
+  
+  let currentX = 100; // Start padding
+  
+  // Alternate y positions for visual variety
+  const yPositions = [120, 180, 100, 200, 140, 160, 130, 190, 110, 170];
+  
+  sortedItems.forEach((item, index) => {
+    const size = IMAGE_SIZES[item.width];
+    
+    positions.push({
+      x: currentX,
+      y: yPositions[index % yPositions.length],
+      width: size.width,
+      height: size.height,
+      item: item,
+    });
+    
+    // Check if this is the first photo of a new month
+    const currentMonth = new Date(item.date).getMonth();
+    const isMonthStart = index === 0 || 
+      new Date(sortedItems[index - 1].date).getMonth() !== currentMonth;
+    
+    // Generate ticks between this photo and the next
+    if (index < sortedItems.length - 1) {
+      const nextSize = IMAGE_SIZES[sortedItems[index + 1].width];
+      const startX = currentX + (size.width / 2); // Center of current photo
+      const endX = currentX + size.width + FIXED_GAP + (nextSize.width / 2); // Center of next photo
+      const tickSpacing = (endX - startX) / TICKS_BETWEEN_PHOTOS;
+      
+      // Generate fixed number of ticks between photos
+      for (let t = 0; t <= TICKS_BETWEEN_PHOTOS; t++) {
+        const tickX = startX + (t * tickSpacing);
+        const roundedX = Math.round(tickX); // Round to integer pixel
+        const isFirstTick = t === 0;
+        
+        // Only add if not already present, but preserve month label if any tick at this position has it
+        const existing = tickMap.get(roundedX);
+        if (!existing) {
+          tickMap.set(roundedX, {
+            x: roundedX, // CRITICAL: Use rounded value for rendering too, not original float
+            isMonthStart: isFirstTick && isMonthStart,
+            monthLabel: (isFirstTick && isMonthStart) 
+              ? `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`
+              : undefined,
+          });
+        } else if (isFirstTick && isMonthStart && !existing.monthLabel) {
+          // Preserve month label if this tick has one but existing doesn't
+          existing.isMonthStart = true;
+          existing.monthLabel = `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`;
+        }
+      }
+    } else {
+      // Last photo - just add one tick at its center
+      const tickX = currentX + (size.width / 2);
+      const roundedX = Math.round(tickX);
+      
+      const existing = tickMap.get(roundedX);
+      if (!existing) {
+        tickMap.set(roundedX, {
+          x: roundedX, // CRITICAL: Use rounded value for rendering too
+          isMonthStart: isMonthStart,
+          monthLabel: isMonthStart 
+            ? `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`
+            : undefined,
+        });
+      } else if (isMonthStart && !existing.monthLabel) {
+        // Preserve month label if this tick has one but existing doesn't
+        existing.isMonthStart = true;
+        existing.monthLabel = `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`;
+      }
+    }
+    
+    // Update position for next item
+    currentX += size.width + FIXED_GAP;
+  });
+  
+  // Convert map to array
+  const allTicks = Array.from(tickMap.values());
+  
+  // Calculate total width needed
+  const lastPos = positions[positions.length - 1];
+  const totalWidth = lastPos.x + lastPos.width + 100; // End padding
+  
+  return { positions, totalWidth, ticks: allTicks };
+};
 
 export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -58,15 +166,16 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   // Set to false to disable debug logging
   const DEBUG_PERSISTENCE = false;
 
-  // Calculate scale based on viewport height to ensure timeline is always visible
+  // Calculate positions and ticks
+  const { positions, totalWidth, ticks } = calculateTimelinePositions(items);
+
+  // Calculate scale based on viewport height
   useEffect(() => {
     const updateScale = () => {
       const vh = window.innerHeight;
-      // Reserve 80px for timeline ruler at bottom
       const availableHeight = vh - 80;
-      // Calculate scale based on tallest image (694px) plus some margin
-      const maxImageHeight = 694;
-      const desiredMaxHeight = availableHeight * 0.85; // Use 85% of available height
+      const maxImageHeight = 400; // Max from IMAGE_SIZES
+      const desiredMaxHeight = availableHeight * 0.75;
       const newScale = Math.min(1, desiredMaxHeight / maxImageHeight);
       setScale(newScale);
     };
@@ -232,8 +341,21 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     // Track scroll position and update active tick
     lenis.on('scroll', ({ scroll }: { scroll: number }) => {
       const viewportCenter = scroll + (typeof window !== 'undefined' ? window.innerWidth / 2 : 800);
-      const tickSpacing = 16; // px per tick
-      const centerTickIndex = Math.round(viewportCenter / tickSpacing);
+      
+      // Find which tick is closest to viewport center
+      let closestTickIndex = 0;
+      let minDistance = Infinity;
+      
+      ticks.forEach((tick, index) => {
+        const tickX = tick.x + 100; // Account for padding
+        const distance = Math.abs(tickX - viewportCenter);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestTickIndex = index;
+        }
+      });
+      
+      const centerTickIndex = closestTickIndex;
       
       // When active tick changes, add ALL ticks between previous and current to recent history
       if (centerTickIndex !== activeTickIndex) {
@@ -307,82 +429,78 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // Generate timeline ruler ticks with individual fall-back animation
-  const generateRuler = () => {
-    const totalTicks = 360; // 30 days × 12 months = 360 ticks
-    const tickSpacing = 16; // px per tick
-    const ticks = [];
+  // Generate editorial timeline ruler
+  const generateRuler = (): JSX.Element[] => {
+    if (ticks.length === 0) return [];
+    
+    const renderedTicks: JSX.Element[] = [];
     const now = Date.now();
 
-    for (let i = 0; i < totalTicks; i++) {
-      const isMonthStart = i % 30 === 0;
-      const monthIndex = Math.floor(i / 30);
-      
+    ticks.forEach((tick, i) => {
       const isActive = i === activeTickIndex;
       const wasRecentlyActive = recentTicks.has(i);
       const timeSinceActive = wasRecentlyActive ? now - (recentTicks.get(i) || 0) : 0;
       
       // Calculate tick properties
-      let tickHeight = 16; // base height
-      let tickColor = '#d1d5db'; // gray-300
+      const baseHeight = 16; // All regular ticks
+      const monthHeight = 24; // Month start ticks slightly taller
+      const activeHeight = 40; // Current active tick
       
+      let tickHeight = baseHeight;
+      let tickColor = '#d1d5db'; // All same color (light grey)
+      
+      // ONLY the active tick is thicker
       if (isActive) {
-        // Current tick - black and tall
-        tickHeight = 48;
-        tickColor = '#000000';
+        tickHeight = activeHeight;
+        tickColor = '#000000'; // Black
       } else if (wasRecentlyActive && timeSinceActive < 500) {
-        // Recently active tick - falling back down
-        // Height decreases over time
-        const progress = timeSinceActive / 500; // 0 to 1 over 500ms
-        const fallingHeight = 48 - (32 * progress); // 48px -> 16px
-        tickHeight = Math.max(16, fallingHeight);
-        
-        // Color transitions from black to gray
-        if (progress < 0.3) {
-          tickColor = '#000000'; // black
-        } else if (progress < 0.6) {
-          tickColor = '#6b7280'; // gray-500
-        } else {
-          tickColor = '#9ca3af'; // gray-400
-        }
+        // Wave effect - stays 1px wide
+        const progress = timeSinceActive / 500;
+        const waveHeight = baseHeight + ((activeHeight - baseHeight) * (1 - progress));
+        tickHeight = waveHeight;
+        tickColor = '#d1d5db';
+      } else if (tick.isMonthStart) {
+        // Month start - slightly taller, but SAME thickness
+        tickHeight = monthHeight;
+        tickColor = '#d1d5db';
       }
+      // All other ticks: tickHeight = baseHeight
 
-      ticks.push(
+      // Use X position in key to ensure uniqueness
+      const uniqueKey = `tick-${Math.round(tick.x)}`;
+
+      renderedTicks.push(
         <div
-          key={i}
+          key={uniqueKey}
           className="absolute flex flex-col items-center"
-          style={{ left: `${i * tickSpacing}px`, bottom: 0 }}
+          style={{ left: `${tick.x + 100}px`, bottom: 0 }}
         >
-          {/* Tick line with smooth animation */}
+          {/* Tick line - static width via className, animate only height and color */}
           <motion.div
-            className="w-px"
+            key={`line-${uniqueKey}-${isActive ? 'active' : 'inactive'}`}
+            className={isActive ? 'w-[2px]' : 'w-[1px]'}
+            initial={{ height: baseHeight }}
             animate={{
               height: tickHeight,
               backgroundColor: tickColor,
             }}
             transition={{
-              height: {
-                duration: isActive ? 0.3 : 0.2,
-                ease: isActive ? [0.34, 1.56, 0.64, 1] : "easeOut",
-              },
-              backgroundColor: {
-                duration: 0.15,
-                ease: "easeOut",
-              }
+              height: { duration: 0.2, ease: "easeOut" },
+              backgroundColor: { duration: 0.15, ease: "easeOut" }
             }}
           />
           
-          {/* Month label */}
-          {isMonthStart && monthIndex < MONTHS.length && (
-            <div className="absolute -bottom-6 text-xs font-bold text-gray-400 tracking-wider">
-              {MONTHS[monthIndex]}
+          {/* Month label (only for months with media) */}
+          {tick.monthLabel && (
+            <div className="absolute -bottom-7 text-[10px] font-bold text-gray-500 tracking-wider whitespace-nowrap">
+              {tick.monthLabel}
             </div>
           )}
         </div>
       );
-    }
+    });
 
-    return ticks;
+    return renderedTicks;
   };
 
   return (
@@ -406,21 +524,13 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         <div 
           ref={canvasRef}
           className="relative h-full" 
-          style={{ width: `${6000 * scale}px` }}
+          style={{ width: `${totalWidth}px` }}
           onClick={handleCanvasClick}
         >
           
-          {/* Floating images - absolutely positioned */}
-          {items.slice(0, 10).map((item, index) => {
-            const pos = imagePositions[index];
-            if (!pos) return null;
-
-            const scaledPos = {
-              x: pos.x * scale,
-              y: pos.y * scale,
-              width: pos.width * scale,
-              height: pos.height * scale,
-            };
+          {/* Floating images - equal spacing */}
+          {positions.map((pos, index) => {
+            const item = pos.item;
 
             return (
               <motion.div
@@ -430,31 +540,42 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 className="absolute z-30"
                 style={{
-                  left: `${scaledPos.x}px`,
-                  top: `${scaledPos.y}px`,
-                  width: `${scaledPos.width}px`,
-                  height: `${scaledPos.height}px`,
+                  left: `${pos.x}px`,
+                  top: `${pos.y}px`,
+                  width: `${pos.width}px`,
+                  height: `${pos.height}px`,
                   pointerEvents: placementColor ? 'none' : 'auto',
                 }}
                 onMouseEnter={() => !placementColor && setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
-                {/* Image */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.src}
-                  alt={item.title}
-                  className="h-full w-full object-cover"
-                  style={{
-                    borderRadius: 0,
-                    boxShadow: 'none',
-                  }}
-                />
+                {/* Image or Video */}
+                {item.type === 'video' && item.videoSrc ? (
+                  <video
+                    src={item.videoSrc}
+                    className="h-full w-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={item.src}
+                    alt={item.title}
+                    className="h-full w-full object-cover"
+                    style={{
+                      borderRadius: 0,
+                      boxShadow: 'none',
+                    }}
+                  />
+                )}
 
                 {/* Hover labels */}
                 {hoveredIndex === index && !placementColor && (
                   <>
-                    {/* Title above image - slides down */}
+                    {/* Title above image */}
                     <motion.div
                       initial={{ y: -8, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
@@ -462,9 +583,9 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                         duration: 0.45,
                         ease: [0.25, 0.46, 0.45, 0.94],
                       }}
-                      className="absolute -top-12 left-0 text-left"
+                      className="absolute -top-10 left-0 text-left"
                       style={{
-                        fontSize: `${14 * (scaledPos.width / 280)}px`,
+                        fontSize: '14px',
                         pointerEvents: 'none',
                       }}
                     >
@@ -473,7 +594,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                       </div>
                     </motion.div>
 
-                    {/* Date below image - slides up */}
+                    {/* Date below image */}
                     <motion.div
                       initial={{ y: 8, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
@@ -482,13 +603,13 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                         ease: [0.25, 0.46, 0.45, 0.94],
                         delay: 0.05,
                       }}
-                      className="absolute -bottom-8 left-0 text-left"
+                      className="absolute -bottom-7 left-0 text-left"
                       style={{
-                        fontSize: `${11 * (scaledPos.width / 280)}px`,
+                        fontSize: '11px',
                         pointerEvents: 'none',
                       }}
                     >
-                      <div className="text-gray-500">{item.date}</div>
+                      <div className="text-gray-500">{formatDate(item.date)}</div>
                     </motion.div>
                   </>
                 )}
@@ -514,7 +635,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
           ))}
 
           {/* Bottom timeline ruler */}
-          <div className="absolute bottom-12 left-0 h-24 z-10" style={{ width: '6000px' }}>
+          <div className="absolute bottom-12 left-0 h-24 z-10" style={{ width: `${totalWidth}px` }}>
             <div className="relative h-full">
               {generateRuler()}
             </div>

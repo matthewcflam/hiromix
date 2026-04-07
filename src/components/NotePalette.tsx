@@ -165,7 +165,37 @@ export default function NotePalette({
                   }}
                 />
 
-                {/* Crumpled paper texture - delete pad only */}
+                {/* Paper texture overlay for all notes */}
+                {note.id === 'yellow' && (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: 'url("/assets/yellownote.jpg")',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                      mixBlendMode: 'multiply',
+                      opacity: 0.3,
+                      pointerEvents: 'none',
+                      zIndex: 2,
+                    }}
+                  />
+                )}
+                {note.id === 'green' && (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: 'url("/assets/greennote.jpg")',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                      mixBlendMode: 'multiply',
+                      opacity: 0.3,
+                      pointerEvents: 'none',
+                      zIndex: 2,
+                    }}
+                  />
+                )}
                 {note.isDelete && (
                   <div
                     className="absolute inset-0"

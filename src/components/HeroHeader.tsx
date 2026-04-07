@@ -22,8 +22,8 @@ export default function HeroHeader() {
           }}
         >
           <div className="flex flex-col">
-            <span>a collection</span>
-            <span>for Anne</span>
+            <span>a mosaic</span>
+            <span>by anne</span>
             {/* <span style={{ fontSize: '51px' }}>(BO®S / 2025)</span> */}
           </div>
         </h1>

@@ -95,20 +95,29 @@ hiromix/
 
 ### Adding Your Own Content
 
-Replace the mock data in `src/data/timeline.ts` and `src/data/music.ts` with your actual projects and music.
+**📖 See [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) for complete instructions on adding your images and videos!**
+
+The timeline automatically positions content based on dates and adjusts spacing dynamically:
+- **Expands** when photos are sparse (more space between items)
+- **Contracts** to minimum spacing when photos are dense
+- **Date-based positioning** ensures chronological accuracy
+
+**Quick Start:**
+1. Create folders: `public/media/images/` and `public/media/videos/`
+2. Add your media files
+3. Edit `src/data/timeline.ts` with your content and dates
 
 **Timeline Items:**
 ```typescript
 {
   id: "unique-id",
   title: "Project Title",
-  date: "2026-03-15T00:00:00.000Z",
-  type: "image" | "video" | "project",
-  src: "image-url-or-path",
+  date: "2024-06-15T00:00:00.000Z", // ISO 8601 format required
+  type: "image" | "video",
+  src: "/media/images/photo.jpg",
   width: "portrait" | "square" | "landscape",
   category: "Category Name",
-  description: "Brief description",
-  videoSrc: "video-url" // for video type
+  videoSrc: "/media/videos/clip.mp4" // for video type
 }
 ```
 
