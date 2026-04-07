@@ -1,4 +1,4 @@
-# BETTER OFF® — THE LOOKBACK
+# A reflection in the mirror
 
 A premium, production-ready portfolio website featuring a cinematic horizontal timeline archive. Built with Next.js, TypeScript, Tailwind CSS, and Framer Motion.
 
