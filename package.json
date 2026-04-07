@@ -1,0 +1,38 @@
+{
+  "name": "hiromix-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "@studio-freight/lenis": "^1.0.42",
+    "@types/three": "^0.183.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
+    "howler": "^2.2.4",
+    "lucide-react": "^1.7.0",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "react-intersection-observer": "^10.0.3",
+    "react-peel": "^2.1.0",
+    "tailwind-merge": "^3.5.0",
+    "three": "^0.183.2"
+  },
+  "devDependencies": {
+    "@types/howler": "^2.2.11",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5"
+  }
+}

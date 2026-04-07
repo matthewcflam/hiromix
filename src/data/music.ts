@@ -1,0 +1,58 @@
+import type { MusicTrack } from "@/types";
+
+export const musicTracks: MusicTrack[] = [
+  {
+    id: "1",
+    title: "Novacane",
+    artist: "Frank Ocean",
+    album: "Nostalgia Ultra",
+    albumArt: "/covers/novacane.jpeg",
+    audioSrc: "/music/novacane.mp3",
+    duration: 244,
+  },
+  {
+    id: "2",
+    title: "American Wedding",
+    artist: "Frank Ocean",
+    album: "Nostalgia Ultra",
+    albumArt: "/covers/nostalgiaultra.jpg",
+    audioSrc: "/music/americanwedding.mp3",
+    duration: 244,
+  },
+  {
+    id: "3",
+    title: "Digital Love",
+    artist: "Daft Punk",
+    album: "Discovery",
+    albumArt: "/covers/03-discovery-daft-punk.jpg",
+    audioSrc: "/music/03-digital-love-daft-punk.mp3",
+    duration: 301,
+  },
+  {
+    id: "4",
+    title: "The Less I Know the Better",
+    artist: "Tame Impala",
+    album: "Currents",
+    albumArt: "/covers/04-currents-tame-impala.jpg",
+    audioSrc: "/music/04-the-less-i-know-tame-impala.mp3",
+    duration: 216,
+  },
+  {
+    id: "5",
+    title: "Shadow",
+    artist: "Chromatics",
+    album: "Kill for Love",
+    albumArt: "/covers/05-kill-for-love-chromatics.jpg",
+    audioSrc: "/music/05-shadow-chromatics.mp3",
+    duration: 254,
+  },
+  {
+    id: "6",
+    title: "Time",
+    artist: "Hans Zimmer",
+    album: "Inception",
+    albumArt: "/covers/06-inception-hans-zimmer.jpg",
+    audioSrc: "/music/06-time-hans-zimmer.mp3",
+    duration: 276,
+  },
+];
