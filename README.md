@@ -1,6 +1,6 @@
 # A Gift For Anne
 
-A premium, production-ready portfolio website featuring a cinematic horizontal timeline archive. Built with Next.js, TypeScript, Tailwind CSS, and Framer Motion.
+A timeline based on https://tlb.betteroff.studio/. The following is a summary of its contents and behaviour.
 
 ## 🎨 Features
 
@@ -77,7 +77,7 @@ hiromix/
 └── package.json                 # Dependencies and scripts
 ```
 
-## Key Technologies
+## Technologies
 
 - **Framework:** Next.js 14+ (App Router)
 - **Language:** TypeScript 5+
