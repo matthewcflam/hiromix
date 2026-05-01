@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from "framer-motion";
 
 interface LoadingScreenProps {
   durationMs: number;
-  pondBackgroundSrc: string;
   loadingGifSrc: string;
   heading?: string;
   onComplete: () => void;
