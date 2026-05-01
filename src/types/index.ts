@@ -1,6 +1,5 @@
 export interface TimelineItem {
   id: string;
-  title: string;
   date: string; // ISO date string
   type: "image" | "video" | "project";
   src: string;

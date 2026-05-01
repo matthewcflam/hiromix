@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import Image from "next/image";
 import type { TimelineItem } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -46,11 +47,14 @@ export default function TimelineCard({ item }: TimelineCardProps) {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="h-full w-full relative"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={item.src}
             alt={item.title}
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+            priority={false}
+            loading="lazy"
           />
         </motion.div>
 

@@ -7,9 +7,11 @@ A premium, production-ready portfolio website featuring a cinematic horizontal t
 - **Cinematic Horizontal Timeline** - Smooth scrolling archive of visual memories
 - **Premium Typography** - Bold editorial design with mix-blend-mode color inversion
 - **Physics-Based Scrolling** - Lenis smooth scroll with momentum and inertia
+- **Interactive Sound Effects** - High-quality audio feedback with Howler.js
 - **Video Support** - Autoplay/pause video cards with viewport detection
 - **Music Player** - Fully functional audio playback with Howler.js
-- **Timeline Ruler** - Synced date ruler with animated indicator
+- **Sticky Notes** - Draggable notes with paper textures and deletion animations
+- **Timeline Ruler** - Synced date ruler with animated tick sounds
 - **Responsive Design** - Optimized for desktop, tablet, and mobile
 - **Accessibility** - WCAG AA compliant with keyboard navigation
 - **Performance** - 60fps animations, lazy loading, optimized images
@@ -30,12 +32,15 @@ A premium, production-ready portfolio website featuring a cinematic horizontal t
 npm install
 ```
 
-3. **Run the development server:**
+3. **Add sound effects (optional):**
+See [SOUND_SETUP.md](./SOUND_SETUP.md) for detailed instructions on adding high-quality sound files.
+
+4. **Run the development server:**
 ```bash
 npm run dev
 ```
 
-4. **Open your browser:**
+5. **Open your browser:**
 Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Build for Production
@@ -147,6 +152,38 @@ Edit the header text in `src/components/HeroHeader.tsx`:
 <span>YOUR TAGLINE</span>
 <span>(YEAR)</span>
 ```
+
+### Loading Screen (Pond + GIF + Percentage)
+
+The homepage now includes a loading screen on every full page load/reload with:
+- A pond background image
+- A centered loading GIF
+- A time-based percentage counter (default ~3 seconds)
+
+1. Place your assets in:
+   - `public/assets/loading/pond-background.jpg`
+   - `public/assets/loading/loading.gif`
+2. Edit settings in `src/lib/loadingScreenConfig.ts`:
+   - `durationMs` (loading length)
+   - `pondBackgroundSrc` and `loadingGifSrc` (asset paths)
+   - `heading` (loading label text)
+3. Load behavior:
+   - The loader replays each time the website is reloaded.
+
+### Sound Effects
+
+The website includes interactive sound effects:
+- **Timeline Ticks** - Mechanical clicks as you scroll through time (velocity-based)
+- **Paper Sounds** - Realistic foley for note interactions (pickup, place, crumple, fall)
+- **Sound Controls** - Toggle and volume control in bottom-right corner
+
+Sound files need to be added separately. See [SOUND_SETUP.md](./SOUND_SETUP.md) for:
+- Required sound files and formats
+- Free sources (Freesound, Zapsplat, BBC)
+- Conversion instructions
+- Audio specifications
+
+The sound system works gracefully without audio files - it will display console warnings but won't break functionality.
 
 ## ⌨️ Keyboard Navigation
 

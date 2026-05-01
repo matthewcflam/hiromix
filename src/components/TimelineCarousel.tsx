@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
 import type { TimelineItem } from "@/types";
 import StickyNote from "./StickyNote";
 import NotePalette from "./NotePalette";
+import { useSoundManager } from "@/lib/useSoundManager";
 
 interface TimelineCarouselProps {
   items: TimelineItem[];
@@ -20,6 +22,16 @@ interface Note {
   rotation: number;
 }
 
+const removeListenerSafely = (
+  target: EventTarget,
+  eventName: string,
+  listener: EventListenerOrEventListenerObject | null | undefined
+) => {
+  if (listener && (typeof listener === "function" || typeof listener === "object")) {
+    target.removeEventListener(eventName, listener);
+  }
+};
+
 // Image size configurations based on width type
 const IMAGE_SIZES = {
   portrait: { width: 300, height: 400 },
@@ -27,7 +39,7 @@ const IMAGE_SIZES = {
   landscape: { width: 400, height: 300 },
 };
 
-const FIXED_GAP = 300; // Equal whitespace between all photos
+const FIXED_GAP = 20; // Equal whitespace between all photos
 const TICKS_BETWEEN_PHOTOS = 30; // Fixed number of ticks between each photo
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -39,10 +51,10 @@ interface TickData {
 }
 
 // Calculate positions with equal spacing and generate editorial ticks
-const calculateTimelinePositions = (items: TimelineItem[]) => {
+const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number) => {
   if (items.length === 0) return { 
     positions: [], 
-    totalWidth: 1000, 
+    totalWidth: Math.max(1000, viewportWidth),
     ticks: [],
   };
 
@@ -61,18 +73,26 @@ const calculateTimelinePositions = (items: TimelineItem[]) => {
   
   // Use Map to deduplicate ticks by X position (rounded to avoid floating point issues)
   const tickMap = new Map<number, TickData>();
+  const safeViewportWidth = Math.max(0, viewportWidth);
+  const firstSize = IMAGE_SIZES[sortedItems[0].width];
+  const lastSize = IMAGE_SIZES[sortedItems[sortedItems.length - 1].width];
+  const startPadding = Math.max(0, (safeViewportWidth / 2) - (firstSize.width / 2));
+  const endPadding = Math.max(0, (safeViewportWidth / 2) - (lastSize.width / 2));
   
-  let currentX = 100; // Start padding
-  
-  // Alternate y positions for visual variety
-  const yPositions = [120, 180, 100, 200, 140, 160, 130, 190, 110, 170];
+  let currentX = startPadding;
   
   sortedItems.forEach((item, index) => {
     const size = IMAGE_SIZES[item.width];
     
+    // Center each image vertically
+    // Assuming viewport height, we'll use a reasonable center point
+    // This will be further adjusted by CSS, but we set a base center position
+    const viewportCenter = 300; // Approximate vertical center
+    const y = viewportCenter - (size.height / 2);
+    
     positions.push({
       x: currentX,
-      y: yPositions[index % yPositions.length],
+      y: y,
       width: size.width,
       height: size.height,
       item: item,
@@ -142,7 +162,7 @@ const calculateTimelinePositions = (items: TimelineItem[]) => {
   
   // Calculate total width needed
   const lastPos = positions[positions.length - 1];
-  const totalWidth = lastPos.x + lastPos.width + 100; // End padding
+  const totalWidth = lastPos.x + lastPos.width + endPadding;
   
   return { positions, totalWidth, ticks: allTicks };
 };
@@ -152,6 +172,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [activeTickIndex, setActiveTickIndex] = useState(0);
+  const activeTickIndexRef = useRef(0);
   const [recentTicks, setRecentTicks] = useState<Map<number, number>>(new Map()); // Map<tickIndex, timestamp>
   const previousScrollRef = useRef(0);
   const previousTickRef = useRef(0); // Track previous tick for interpolation
@@ -159,25 +180,33 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const [placementColor, setPlacementColor] = useState<string | null>(null);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const lenisRef = useRef<Lenis | null>(null);
-  const rafRef = useRef<number>();
-  const [scale, setScale] = useState(1);
+  const rafRef = useRef<number | null>(null);
+  const [viewportWidth, setViewportWidth] = useState(1200);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isTimelineVisible, setIsTimelineVisible] = useState(false);
+  const hasPlayedInitialScrollTickRef = useRef(false);
+  const hasUserInteractedForAudioRef = useRef(false);
+  const hasShownCenteredStateRef = useRef(false);
+  
+  // Sound manager for tick sounds
+  const soundManager = useSoundManager({ enabled: true, volume: 0.5 });
+  const scrollVelocityRef = useRef(0);
+  const lastScrollTimeRef = useRef(Date.now());
   
   // Set to false to disable debug logging
   const DEBUG_PERSISTENCE = false;
 
   // Calculate positions and ticks
-  const { positions, totalWidth, ticks } = calculateTimelinePositions(items);
+  const { positions, totalWidth, ticks } = useMemo(
+    () => calculateTimelinePositions(items, viewportWidth),
+    [items, viewportWidth]
+  );
 
   // Calculate scale based on viewport height
-  useEffect(() => {
+  useLayoutEffect(() => {
     const updateScale = () => {
-      const vh = window.innerHeight;
-      const availableHeight = vh - 80;
-      const maxImageHeight = 400; // Max from IMAGE_SIZES
-      const desiredMaxHeight = availableHeight * 0.75;
-      const newScale = Math.min(1, desiredMaxHeight / maxImageHeight);
-      setScale(newScale);
+      const vw = scrollContainerRef.current?.clientWidth ?? window.innerWidth;
+      setViewportWidth(vw);
     };
 
     updateScale();
@@ -273,6 +302,9 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     
     if (!placementColor || !canvasRef.current) return;
 
+    // Play paper place sound
+    soundManager.playPaperPlace();
+
     // Get the bounding rectangle of the canvas
     const rect = canvasRef.current.getBoundingClientRect();
     
@@ -322,6 +354,33 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     const container = scrollContainerRef.current;
     if (!container) return;
 
+    const markAudioInteraction = () => {
+      hasUserInteractedForAudioRef.current = true;
+      soundManager.unlockAudio();
+    };
+
+    // Scroll gestures must unlock and audibly prime ticker sound immediately.
+    const handleScrollGestureAudio = () => {
+      markAudioInteraction();
+      if (!hasPlayedInitialScrollTickRef.current) {
+        const played = soundManager.playTick(0.15);
+        if (played) {
+          hasPlayedInitialScrollTickRef.current = true;
+        }
+      }
+    };
+
+    container.addEventListener('wheel', handleScrollGestureAudio, { passive: true });
+    container.addEventListener('touchmove', handleScrollGestureAudio, { passive: true });
+    window.addEventListener('wheel', handleScrollGestureAudio, { passive: true });
+    window.addEventListener('touchmove', handleScrollGestureAudio, { passive: true });
+    window.addEventListener('touchstart', markAudioInteraction, { passive: true });
+    window.addEventListener('pointerdown', markAudioInteraction, { passive: true });
+    window.addEventListener('mousedown', markAudioInteraction, { passive: true });
+    container.addEventListener('touchstart', markAudioInteraction, { passive: true });
+    container.addEventListener('pointerdown', markAudioInteraction, { passive: true });
+    window.addEventListener('keydown', markAudioInteraction);
+
     // Create Lenis instance for horizontal scrolling
     const lenis = new Lenis({
       wrapper: container,
@@ -338,16 +397,61 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
 
     lenisRef.current = lenis;
 
+    const getViewportWidth = () => container.clientWidth || window.innerWidth || 800;
+
+    // Align current active tick to viewport center on initialization and resize.
+    if (positions.length > 0 && ticks.length > 0) {
+      const viewportHalf = getViewportWidth() / 2;
+      const clampedActiveTick = Math.min(activeTickIndexRef.current, ticks.length - 1);
+      const activeTick = ticks[clampedActiveTick];
+      const targetScroll = Math.max(0, activeTick.x - viewportHalf);
+
+      lenis.scrollTo(targetScroll, { immediate: true });
+      previousScrollRef.current = targetScroll;
+    }
+
+    if (!hasShownCenteredStateRef.current) {
+      hasShownCenteredStateRef.current = true;
+      setIsTimelineVisible(true);
+    }
+
     // Track scroll position and update active tick
     lenis.on('scroll', ({ scroll }: { scroll: number }) => {
-      const viewportCenter = scroll + (typeof window !== 'undefined' ? window.innerWidth / 2 : 800);
+      const viewportCenter = scroll + (getViewportWidth() / 2);
+      
+      // Calculate scroll velocity for sound rate modulation
+      const now = Date.now();
+      const timeDelta = Math.max(1, now - lastScrollTimeRef.current);
+      const scrollDelta = Math.abs(scroll - previousScrollRef.current);
+      const rawVelocity = scrollDelta / timeDelta; // pixels per millisecond
+      
+      // Normalize velocity to 0-1 range (map 0-5 px/ms to 0-1)
+      const normalizedVelocity = Math.min(1, rawVelocity / 5);
+      scrollVelocityRef.current = normalizedVelocity;
+
+      let playedTickThisFrame = false;
+
+      // Ensure the very first meaningful scroll movement produces an audible tick.
+      if (hasUserInteractedForAudioRef.current && normalizedVelocity > 0.05 && !hasPlayedInitialScrollTickRef.current) {
+        soundManager.unlockAudio();
+        const played = soundManager.playTick(normalizedVelocity);
+        if (played) {
+          hasPlayedInitialScrollTickRef.current = true;
+          playedTickThisFrame = true;
+        }
+      } else if (normalizedVelocity < 0.01) {
+        hasPlayedInitialScrollTickRef.current = false;
+      }
+      
+      previousScrollRef.current = scroll;
+      lastScrollTimeRef.current = now;
       
       // Find which tick is closest to viewport center
       let closestTickIndex = 0;
       let minDistance = Infinity;
       
       ticks.forEach((tick, index) => {
-        const tickX = tick.x + 100; // Account for padding
+        const tickX = tick.x;
         const distance = Math.abs(tickX - viewportCenter);
         if (distance < minDistance) {
           minDistance = distance;
@@ -358,9 +462,16 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       const centerTickIndex = closestTickIndex;
       
       // When active tick changes, add ALL ticks between previous and current to recent history
-      if (centerTickIndex !== activeTickIndex) {
+      if (centerTickIndex !== activeTickIndexRef.current) {
         const previousTick = previousTickRef.current;
         const currentTick = centerTickIndex;
+        
+        // Play tick sound with velocity-based rate
+        // Only play if there's meaningful scroll velocity
+        if (normalizedVelocity > 0.05 && !playedTickThisFrame) {
+          soundManager.unlockAudio();
+          soundManager.playTick(normalizedVelocity);
+        }
         
         setRecentTicks(prev => {
           const newMap = new Map(prev);
@@ -386,6 +497,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         });
         
         previousTickRef.current = centerTickIndex;
+        activeTickIndexRef.current = centerTickIndex;
         setActiveTickIndex(centerTickIndex);
       }
     });
@@ -399,12 +511,23 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     rafRef.current = requestAnimationFrame(raf);
 
     return () => {
-      if (rafRef.current) {
+      removeListenerSafely(container, 'wheel', handleScrollGestureAudio);
+      removeListenerSafely(container, 'touchmove', handleScrollGestureAudio);
+      removeListenerSafely(window, 'wheel', handleScrollGestureAudio);
+      removeListenerSafely(window, 'touchmove', handleScrollGestureAudio);
+      removeListenerSafely(window, 'touchstart', markAudioInteraction);
+      removeListenerSafely(window, 'pointerdown', markAudioInteraction);
+      removeListenerSafely(window, 'mousedown', markAudioInteraction);
+      removeListenerSafely(container, 'touchstart', markAudioInteraction);
+      removeListenerSafely(container, 'pointerdown', markAudioInteraction);
+      removeListenerSafely(window, 'keydown', markAudioInteraction);
+
+      if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
       lenis.destroy();
     };
-  }, []);
+  }, [positions, ticks]);
 
   // Clean up old ticks from recent history
   useEffect(() => {
@@ -430,10 +553,10 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   }, []);
 
   // Generate editorial timeline ruler
-  const generateRuler = (): JSX.Element[] => {
+  const generateRuler = (): ReactElement[] => {
     if (ticks.length === 0) return [];
     
-    const renderedTicks: JSX.Element[] = [];
+    const renderedTicks: ReactElement[] = [];
     const now = Date.now();
 
     ticks.forEach((tick, i) => {
@@ -449,7 +572,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       let tickHeight = baseHeight;
       let tickColor = '#d1d5db'; // All same color (light grey)
       
-      // ONLY the active tick is thicker
+      // ONLY the active tick is highlighted
       if (isActive) {
         tickHeight = activeHeight;
         tickColor = '#000000'; // Black
@@ -473,12 +596,12 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         <div
           key={uniqueKey}
           className="absolute flex flex-col items-center"
-          style={{ left: `${tick.x + 100}px`, bottom: 0 }}
+          style={{ left: `${tick.x}px`, bottom: 0 }}
         >
           {/* Tick line - static width via className, animate only height and color */}
           <motion.div
             key={`line-${uniqueKey}-${isActive ? 'active' : 'inactive'}`}
-            className={isActive ? 'w-[2px]' : 'w-[1px]'}
+            className="w-[1.5px]"
             initial={{ height: baseHeight }}
             animate={{
               height: tickHeight,
@@ -504,18 +627,40 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-white">
+    <div
+      className="fixed inset-0"
+      style={{
+        opacity: isTimelineVisible ? 1 : 0,
+        pointerEvents: isTimelineVisible ? 'auto' : 'none',
+        backgroundImage: `
+          linear-gradient(to right, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
+          url(/assets/linedpaper.jpg),
+          url(/assets/callmeifyougetlost.png)
+        `,
+        backgroundBlendMode: 'screen, multiply, normal',
+        backgroundSize: '100% 100%, 20% 20%, 100% auto',
+        backgroundRepeat: 'repeat, repeat, repeat-x',
+        backgroundPosition: '0 0, 0 0, 0 0',
+        backgroundAttachment: 'fixed, fixed, fixed',
+      }}
+    >
       {/* Note Palette */}
       <NotePalette 
         onColorSelect={handleColorSelect}
         activeColor={placementColor}
         isDeleteMode={isDeleteMode}
         onToggleDeleteMode={handleToggleDeleteMode}
+        onPaperPickupSound={soundManager.playPaperPickup}
+        onPaperCrumpleSound={soundManager.playPaperCrumple}
       />
 
       <div
         ref={scrollContainerRef}
         className="h-full w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
+        onWheelCapture={soundManager.unlockAudio}
+        onTouchStartCapture={soundManager.unlockAudio}
+        onPointerDownCapture={soundManager.unlockAudio}
+        onMouseDownCapture={soundManager.unlockAudio}
         style={{
           cursor: placementColor ? 'crosshair' : 'default',
         }}
@@ -541,7 +686,8 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 className="absolute z-30"
                 style={{
                   left: `${pos.x}px`,
-                  top: `${pos.y}px`,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   width: `${pos.width}px`,
                   height: `${pos.height}px`,
                   pointerEvents: placementColor ? 'none' : 'auto',
@@ -560,15 +706,14 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                     playsInline
                   />
                 ) : (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
+                  <Image
                     src={item.src}
                     alt={item.title}
-                    className="h-full w-full object-cover"
-                    style={{
-                      borderRadius: 0,
-                      boxShadow: 'none',
-                    }}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
+                    priority={index === 0}
+                    loading={index <= 2 ? "eager" : "lazy"}
                   />
                 )}
 
@@ -631,6 +776,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
               onDelete={handleDeleteNote}
               onTextChange={handleNoteTextChange}
               onPositionChange={handleNotePositionChange}
+              onPaperFallSound={soundManager.playPaperFall}
             />
           ))}
 

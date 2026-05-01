@@ -7,13 +7,17 @@ interface NotePaletteProps {
   activeColor: string | null;
   isDeleteMode: boolean;
   onToggleDeleteMode: () => void;
+  onPaperPickupSound?: () => void;
+  onPaperCrumpleSound?: () => void;
 }
 
 export default function NotePalette({ 
   onColorSelect, 
   activeColor, 
   isDeleteMode,
-  onToggleDeleteMode 
+  onToggleDeleteMode,
+  onPaperPickupSound,
+  onPaperCrumpleSound,
 }: NotePaletteProps) {
   const notes = [
     {
@@ -45,8 +49,13 @@ export default function NotePalette({
 
   const handleNoteClick = (noteId: string, isDelete?: boolean) => {
     if (isDelete) {
+      // Play crumple sound when toggling delete mode
+      onPaperCrumpleSound?.();
       onToggleDeleteMode();
     } else {
+      // Play paper pickup sound when selecting a note
+      onPaperPickupSound?.();
+      
       if (activeColor === noteId) {
         onColorSelect('');
       } else {

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { useInView } from "react-intersection-observer";
 import type { TimelineItem } from "@/types";
 import { cn } from "@/lib/utils";
@@ -88,11 +89,13 @@ export default function VideoCard({ item }: VideoCardProps) {
           />
         ) : (
           <div className="h-full w-full relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={item.src}
               alt={item.title}
-              className="h-full w-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
+              loading="lazy"
             />
           </div>
         )}

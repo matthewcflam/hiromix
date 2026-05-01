@@ -1,10 +1,21 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  .win95-ui {
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    color: #000000;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: auto;
+    font-smooth: never;
+    text-rendering: optimizeSpeed;
+  }
+
   html {
-    @apply antialiased;
+    @apply antialiased font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -13,13 +24,268 @@
     @apply bg-white text-black;
     overflow-x: hidden;
   }
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+  }
+  :root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+  }
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  * {
+    @apply border-gray-200;
+  }
 }
 
-@layer utilities {
+/* @layer utilities {
+  .retro-metal-pink {
+    background:
+      linear-gradient(
+        152deg,
+        #ffb7e9 0%,
+        #ff6fcc 25%,
+        #ff2fa8 42%,
+        #e30088 65%,
+        #a20065 100%
+      );
+  }
+
+  .retro-metal-pink-soft {
+    background:
+      linear-gradient(
+        152deg,
+        #ffd0f2 0%,
+        #ff94db 30%,
+        #ff54bf 46%,
+        #f20f99 40%,
+        #bc0076 70%
+      );
+  }
+
+  .ipod-glass-display {
+    position: relative;
+    border: 1px solid #000000;
+    background: linear-gradient(180deg, #4f4f4f 0%, #2a2a2a 48%, #0d0d0d 100%);
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, 0.24),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.78);
+  }
+
+  .ipod-glass-display::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.44) 0%,
+      rgba(255, 255, 255, 0.12) 36%,
+      rgba(255, 255, 255, 0.22) 57%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
+  }
+
+  .ipod-glass-display::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.56;
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12) 0,
+      rgba(255, 255, 255, 0.12) 1px,
+      rgba(0, 0, 0, 0.05) 1px,
+      rgba(0, 0, 0, 0.05) 2px
+    );
+  } */
+
+  @layer utilities {
+  .retro-metal-pink {
+    /* Vibrant pastel hot pink gradient - toned down */
+    background: 
+      linear-gradient(
+        135deg,
+        #ff99dd 0%,
+        #ff77cc 50%,
+        #ff55bb 100%
+      );
+  }
+
+  .retro-metal-pink-soft {
+    /* Lighter vibrant pastel hot pink for buttons - toned down */
+    background: 
+      linear-gradient(
+        135deg,
+        #ffc0e6 0%,
+        #ffb3dd 50%,
+        #ff99cc 100%
+      );
+  }
+
+  .ipod-glass-display {
+    position: relative;
+    border: 1.5px solid #1a1a1a;
+    /* Darker, flatter black to match the device's bezel */
+    background: linear-gradient(180deg, #2b2b2b 0%, #141414 20%, #050505 100%);
+    box-shadow:
+      inset 1px 1px 1px rgba(255, 255, 255, 0.15),
+      inset -1px -1px 2px rgba(0, 0, 0, 0.9);
+  }
+
+  .ipod-glass-display::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Sharper, more realistic diagonal glass glare */
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.1) 30%,
+      rgba(255, 255, 255, 0) 35%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+
+  .ipod-glass-display::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Reduced opacity to make the scanlines look like a modern LCD rather than a retro CRT */
+    opacity: 0.15; 
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2) 0,
+      rgba(255, 255, 255, 0.2) 1px,
+      rgba(0, 0, 0, 0.1) 1px,
+      rgba(0, 0, 0, 0.1) 2px
+    );
+  }
+}
+
+  .win95-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 18px;
+    width: 100%;
+    background: transparent;
+  }
+
+  .win95-volume-slider:focus {
+    outline: none;
+  }
+
+  .win95-volume-slider::-webkit-slider-runnable-track {
+    height: 8px;
+    background: #000000;
+    border-top: 1px solid #2f2f2f;
+    border-left: 1px solid #2f2f2f;
+    border-right: 1px solid #8d8d8d;
+    border-bottom: 1px solid #8d8d8d;
+  }
+
+  .win95-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 18px;
+    margin-top: -6px;
+    background: #121212;
+    border-top: 1px solid #d5d5d5;
+    border-left: 1px solid #d5d5d5;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+  }
+
+  .win95-volume-slider::-moz-range-track {
+    height: 8px;
+    background: #000000;
+    border-top: 1px solid #2f2f2f;
+    border-left: 1px solid #2f2f2f;
+    border-right: 1px solid #8d8d8d;
+    border-bottom: 1px solid #8d8d8d;
+  }
+
+  .win95-volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 18px;
+    background: #121212;
+    border-top: 1px solid #d5d5d5;
+    border-left: 1px solid #d5d5d5;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    border-radius: 0;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .gpu-accelerated {
     transform: translate3d(0, 0, 0);
     will-change: transform;
@@ -28,9 +294,8 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-}
