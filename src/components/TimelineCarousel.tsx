@@ -711,7 +711,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 ) : (
                   <Image
                     src={item.src}
-                    alt={item.title}
+                    alt="Timeline item image"
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover"
@@ -738,7 +738,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                       }}
                     >
                       <div className="font-bold tracking-tight text-black">
-                        {item.title}
+                        {"Timeline item image"}
                       </div>
                     </motion.div>
 
