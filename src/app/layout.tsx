@@ -24,7 +24,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "a trip down memory lane",
+  title: "For Anne, my love",
 };
 
 export default function RootLayout({

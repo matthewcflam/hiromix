@@ -54,7 +54,6 @@ const getStaggeredProgress = (elapsedMs: number, durationMs: number): number => 
 
 export default function LoadingScreen({
   durationMs,
-  pondBackgroundSrc,
   loadingGifSrc,
   heading = "Loading",
   onComplete,
@@ -119,7 +118,6 @@ export default function LoadingScreen({
         {!backgroundFailed && (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={pondBackgroundSrc}
             alt=""
             className="h-full w-full object-cover"
             onError={() => setBackgroundFailed(true)}

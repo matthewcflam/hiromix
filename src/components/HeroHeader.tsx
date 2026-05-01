@@ -18,12 +18,12 @@ export default function HeroHeader() {
             fontSize: 'clamp(1.5rem, 7vw, 4.5rem)',
             lineHeight: '0.88',
             letterSpacing: '-0.02em',
-            fontWeight: 700,
-            fontFamily: '"MS Sans Serif", Arial, sans-serif',
+            fontWeight: 900,
+            fontFamily: '"Helvetica", "Helvetica Neue", Arial, sans-serif',
           }}
         >
           <div className="flex flex-col">
-            <span>A trip down memory lane</span>
+            <span>For Anne, my love</span>
             <span></span>
             {/* <span style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)' }}>(BO®S / 2025)</span> */}
           </div>

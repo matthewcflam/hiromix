@@ -42,7 +42,7 @@ function ForwardGlyph() {
 
 export default function MusicPlayer({ tracks }: MusicPlayerProps) {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [showQueue, setShowQueue] = useState(false);
   const [pressedControl, setPressedControl] = useState<string | null>(null);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);

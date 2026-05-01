@@ -714,7 +714,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 ) : (
                   <Image
                     src={item.src}
-                    alt="Timeline item image"
+                    alt="Content"
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover"
@@ -726,25 +726,6 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 {/* Hover labels */}
                 {hoveredIndex === index && !placementColor && (
                   <>
-                    {/* Title above image */}
-                    <motion.div
-                      initial={{ y: -8, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{
-                        duration: 0.45,
-                        ease: [0.25, 0.46, 0.45, 0.94],
-                      }}
-                      className="absolute -top-10 left-0 text-left"
-                      style={{
-                        fontSize: '14px',
-                        pointerEvents: 'none',
-                      }}
-                    >
-                      <div className="font-bold tracking-tight text-black">
-                        {"Timeline item image"}
-                      </div>
-                    </motion.div>
-
                     {/* Date below image */}
                     <motion.div
                       initial={{ y: 8, opacity: 0 }}

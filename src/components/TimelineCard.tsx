@@ -49,7 +49,7 @@ export default function TimelineCard({ item }: TimelineCardProps) {
         >
           <Image
             src={item.src}
-            alt="Timeline item image"
+            alt="Content"
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover"
@@ -77,11 +77,8 @@ export default function TimelineCard({ item }: TimelineCardProps) {
         >
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-2xl font-bold leading-tight">
-                {"Timeline item image"}
-              </h3>
               {item.description && (
-                <p className="mt-1 text-sm opacity-80">{item.description}</p>
+                <p className="text-sm opacity-80">{item.description}</p>
               )}
             </div>
           </div>

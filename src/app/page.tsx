@@ -46,7 +46,6 @@ export default function Home() {
       {isLoaderActive && (
         <LoadingScreen
           durationMs={loadingScreenConfig.durationMs}
-          pondBackgroundSrc={loadingScreenConfig.pondBackgroundSrc}
           loadingGifSrc={loadingScreenConfig.loadingGifSrc}
           heading={loadingScreenConfig.heading}
           onComplete={handleLoaderComplete}
