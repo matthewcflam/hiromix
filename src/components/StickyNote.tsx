@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface StickyNoteProps {
@@ -54,24 +54,26 @@ export default function StickyNote({
     setPosition({ x: initialX, y: initialY });
   }, [initialX, initialY]);
 
-  // Boundary check to keep note within canvas bounds
-  const constrainPosition = (x: number, y: number) => {
-    const padding = 20;
-    
-    if (canvasBounds) {
-      // Use provided canvas bounds
+  // Boundary check to keep note within canvas bounds (memoized to prevent dependency issues)
+  const constrainPosition = useMemo(() => {
+    return (x: number, y: number) => {
+      const padding = 20;
+      
+      if (canvasBounds) {
+        // Use provided canvas bounds
+        return {
+          x: Math.max(padding, Math.min(x, canvasBounds.width - NOTE_WIDTH - padding)),
+          y: Math.max(padding, Math.min(y, canvasBounds.height - NOTE_HEIGHT - padding)),
+        };
+      }
+      
+      // Fallback: just ensure minimum padding, no upper bounds
       return {
-        x: Math.max(padding, Math.min(x, canvasBounds.width - NOTE_WIDTH - padding)),
-        y: Math.max(padding, Math.min(y, canvasBounds.height - NOTE_HEIGHT - padding)),
+        x: Math.max(padding, x),
+        y: Math.max(padding, y),
       };
-    }
-    
-    // Fallback: just ensure minimum padding, no upper bounds
-    return {
-      x: Math.max(padding, x),
-      y: Math.max(padding, y),
     };
-  };
+  }, [canvasBounds]);
 
   const handleDragHandleMouseDown = (e: React.MouseEvent) => {
     if (isDeleteMode || isFocused) return;
@@ -160,7 +162,7 @@ export default function StickyNote({
       document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('mouseleave', handleMouseUp);
     };
-  }, [isDragging, id, onPositionChange]);
+  }, [isDragging, id, onPositionChange, constrainPosition]);
 
   // Helper function to convert color to pastel gradient
   const getColorGradient = (colorHex: string) => {

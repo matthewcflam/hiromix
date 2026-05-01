@@ -3,7 +3,17 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
-import type {} from '@/types/react-three-fiber';
+
+// Augment JSX namespace for React Three Fiber elements
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      mesh: any;
+      planeGeometry: any;
+      shaderMaterial: any;
+    }
+  }
+}
 
 interface PaperMeshProps {
   color: string;
