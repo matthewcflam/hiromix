@@ -215,6 +215,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   }, []);
 
    // Load notes from localStorage on mount
+   // DEBUG_PERSISTENCE is a constant, not a dependency
    // eslint-disable-next-line react-hooks/exhaustive-deps
    useEffect(() => {
      if (DEBUG_PERSISTENCE) console.log('🔍 Loading notes from localStorage...');
@@ -245,6 +246,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
    }, []);
 
   // Save notes to localStorage whenever they change (but only after initial load)
+  // DEBUG_PERSISTENCE is a constant debug flag, intentionally not in dependencies
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isInitialized) {
@@ -352,6 +354,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   };
 
   // Initialize Lenis smooth scrolling
+  // soundManager is a stable hook return value, intentionally not in dependencies
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const container = scrollContainerRef.current;
