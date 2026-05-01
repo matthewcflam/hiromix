@@ -86,7 +86,7 @@ export function useSoundManager(config: SoundManagerConfig = {}): SoundManagerRe
       tick: new Howl({
         src: ['/sounds/tick.mp3', '/sounds/tick.ogg'],
         volume: volume * 0.4, // Ticks are more subtle
-        preload: 'auto',
+        preload: true,
         html5: false,
         onloaderror: (id, error) => {
           console.warn('Failed to load tick sound:', error);
@@ -95,7 +95,7 @@ export function useSoundManager(config: SoundManagerConfig = {}): SoundManagerRe
       paperPickup: new Howl({
         src: ['/sounds/paper-pickup.mp3', '/sounds/paper-pickup.ogg', '/sounds/paper-place.mp3'],
         volume: volume * 0.6,
-        preload: 'auto',
+        preload: true,
         html5: false,
         onloaderror: (id, error) => {
           console.warn('Failed to load paper-pickup sound:', error);
@@ -104,7 +104,7 @@ export function useSoundManager(config: SoundManagerConfig = {}): SoundManagerRe
       paperPlace: new Howl({
         src: ['/sounds/paper-place.mp3', '/sounds/paper-place.ogg'],
         volume: volume * 0.6,
-        preload: 'auto',
+        preload: true,
         html5: false,
         onloaderror: (id, error) => {
           console.warn('Failed to load paper-place sound:', error);
@@ -113,7 +113,7 @@ export function useSoundManager(config: SoundManagerConfig = {}): SoundManagerRe
       paperCrumple: new Howl({
         src: ['/sounds/paper-crumple.mp3', '/sounds/paper-crumple.ogg'],
         volume: volume * 0.7,
-        preload: 'auto',
+        preload: true,
         html5: false,
         onloaderror: (id, error) => {
           console.warn('Failed to load paper-crumple sound:', error);
@@ -122,7 +122,7 @@ export function useSoundManager(config: SoundManagerConfig = {}): SoundManagerRe
       paperFall: new Howl({
         src: ['/sounds/paper-fall.mp3', '/sounds/paper-fall.ogg'],
         volume: volume * 0.6,
-        preload: 'auto',
+        preload: true,
         html5: false,
         onloaderror: (id, error) => {
           console.warn('Failed to load paper-fall sound:', error);

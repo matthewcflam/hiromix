@@ -24,9 +24,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "BETTER OFF® — THE LOOKBACK",
-  description: "A cinematic timeline archive of visual memories and creative work",
-  keywords: ["portfolio", "photography", "visual arts", "archive"],
+  title: "a trip down memory lane",
 };
 
 export default function RootLayout({
