@@ -150,6 +150,7 @@ export function useSoundManager(config: SoundManagerConfig = {}): SoundManagerRe
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only initialize once
 
   // Register all relevant interaction sources to unlock audio as early as possible.

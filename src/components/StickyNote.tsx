@@ -15,6 +15,7 @@ interface StickyNoteProps {
   onTextChange: (id: string, text: string) => void;
   onPositionChange?: (id: string, x: number, y: number) => void;
   onPaperFallSound?: () => void;
+  canvasBounds?: { width: number; height: number };
 }
 
 export default function StickyNote({
@@ -29,6 +30,7 @@ export default function StickyNote({
   onTextChange,
   onPositionChange,
   onPaperFallSound,
+  canvasBounds,
 }: StickyNoteProps) {
   const [text, setText] = useState(initialText);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -52,17 +54,22 @@ export default function StickyNote({
     setPosition({ x: initialX, y: initialY });
   }, [initialX, initialY]);
 
-  // Boundary check to keep note in scrollable area (not just viewport)
+  // Boundary check to keep note within canvas bounds
   const constrainPosition = (x: number, y: number) => {
     const padding = 20;
-    // X: constrain to scrollable timeline width
-    const maxX = Math.max(0, document.documentElement.scrollWidth - NOTE_WIDTH - padding);
-    // Y: allow positioning anywhere on the page vertically (no constraint)
-    // Just ensure it doesn't go above the top edge
     
+    if (canvasBounds) {
+      // Use provided canvas bounds
+      return {
+        x: Math.max(padding, Math.min(x, canvasBounds.width - NOTE_WIDTH - padding)),
+        y: Math.max(padding, Math.min(y, canvasBounds.height - NOTE_HEIGHT - padding)),
+      };
+    }
+    
+    // Fallback: just ensure minimum padding, no upper bounds
     return {
-      x: Math.max(padding, Math.min(x, maxX)),
-      y: Math.max(padding, y), // No upper limit - allow below viewport
+      x: Math.max(padding, x),
+      y: Math.max(padding, y),
     };
   };
 
@@ -315,14 +322,14 @@ export default function StickyNote({
                   filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))',
                 }}
               >
-                {/* Arrow pointing down-right */}
+                {/* Arrow head pointing down-right */}
                 <path
-                  d="M4 4 L16 16 M10 16 L16 16 L16 10"
+                  d="M10 16 L16 16 L16 10 Z"
                   stroke="rgba(0, 0, 0, 0.5)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  fill="none"
+                  fill="rgba(0, 0, 0, 0.3)"
                 />
               </svg>
             </div>

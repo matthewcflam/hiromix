@@ -214,36 +214,38 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  // Load notes from localStorage on mount
-  useEffect(() => {
-    if (DEBUG_PERSISTENCE) console.log('🔍 Loading notes from localStorage...');
-    
-    // Check if localStorage is available
-    if (typeof window === 'undefined' || !window.localStorage) {
-      console.error('❌ localStorage is not available');
-      setIsInitialized(true);
-      return;
-    }
+   // Load notes from localStorage on mount
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   useEffect(() => {
+     if (DEBUG_PERSISTENCE) console.log('🔍 Loading notes from localStorage...');
+     
+     // Check if localStorage is available
+     if (typeof window === 'undefined' || !window.localStorage) {
+       console.error('❌ localStorage is not available');
+       setIsInitialized(true);
+       return;
+     }
 
-    try {
-      const saved = localStorage.getItem('timeline-notes');
-      if (DEBUG_PERSISTENCE) console.log('📦 Raw localStorage data:', saved);
-      
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (DEBUG_PERSISTENCE) console.log(`✅ Loaded ${parsed.length} notes from localStorage:`, parsed);
-        setNotes(parsed);
-      } else {
-        if (DEBUG_PERSISTENCE) console.log('ℹ️ No saved notes found in localStorage');
-      }
-    } catch (e) {
-      console.error('❌ Failed to load notes:', e);
-    } finally {
-      setIsInitialized(true);
-    }
-  }, []);
+     try {
+       const saved = localStorage.getItem('timeline-notes');
+       if (DEBUG_PERSISTENCE) console.log('📦 Raw localStorage data:', saved);
+       
+       if (saved) {
+         const parsed = JSON.parse(saved);
+         if (DEBUG_PERSISTENCE) console.log(`✅ Loaded ${parsed.length} notes from localStorage:`, parsed);
+         setNotes(parsed);
+       } else {
+         if (DEBUG_PERSISTENCE) console.log('ℹ️ No saved notes found in localStorage');
+       }
+     } catch (e) {
+       console.error('❌ Failed to load notes:', e);
+     } finally {
+       setIsInitialized(true);
+     }
+   }, []);
 
   // Save notes to localStorage whenever they change (but only after initial load)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isInitialized) {
       if (DEBUG_PERSISTENCE) console.log('⏸️ Skipping save - not initialized yet');
@@ -350,6 +352,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   };
 
   // Initialize Lenis smooth scrolling
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -777,6 +780,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
               onTextChange={handleNoteTextChange}
               onPositionChange={handleNotePositionChange}
               onPaperFallSound={soundManager.playPaperFall}
+              canvasBounds={{ width: totalWidth, height: window.innerHeight }}
             />
           ))}
 

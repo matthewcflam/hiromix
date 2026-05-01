@@ -3,6 +3,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
+import type {} from '@/types/react-three-fiber';
 
 interface PaperMeshProps {
   color: string;
