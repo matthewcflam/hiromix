@@ -4,17 +4,6 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 
-// Augment JSX namespace for React Three Fiber elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      mesh: any;
-      planeGeometry: any;
-      shaderMaterial: any;
-    }
-  }
-}
-
 interface PaperMeshProps {
   color: string;
   isPeeling: boolean;
@@ -158,6 +147,7 @@ function PaperMesh({ color, isPeeling, isDragging, rotation }: PaperMeshProps) {
   });
 
   return (
+    // @ts-expect-error React Three Fiber JSX elements
     <mesh ref={meshRef} rotation={[0, 0, rotation * (Math.PI / 180)]}>
       <planeGeometry args={[1.92, 1.92, 48, 48]} />
       <shaderMaterial
