@@ -54,6 +54,22 @@ const isStickyNotesRow = (value: unknown): value is StickyNotesRow => {
   );
 };
 
+const getDeletedNoteId = (
+  payload: RealtimePostgresChangesPayload<StickyNotesRow>
+): string | null => {
+  const oldRecord = payload.old;
+  if (!oldRecord || typeof oldRecord !== "object") {
+    return null;
+  }
+
+  const noteId = (oldRecord as Partial<StickyNotesRow>).id;
+  if (typeof noteId !== "string" || noteId.length === 0) {
+    return null;
+  }
+
+  return noteId;
+};
+
 const mapRowToStickyNoteRecord = (row: StickyNotesRow): StickyNoteRecord => ({
   id: row.id,
   boardId: row.board_id,
@@ -217,8 +233,8 @@ export const subscribeToStickyNotes = (
         filter: `board_id=eq.${boardId}`,
       },
       (payload: RealtimePostgresChangesPayload<StickyNotesRow>) => {
-        const noteId = payload.old.id;
-        if (typeof noteId === "string" && noteId.length > 0) {
+        const noteId = getDeletedNoteId(payload);
+        if (noteId) {
           handlers.onDelete(noteId);
         }
       }
