@@ -32,6 +32,28 @@ interface StickyNotesChannelHandlers {
   onStatusChange?: (status: string) => void;
 }
 
+const isStickyNotesRow = (value: unknown): value is StickyNotesRow => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const row = value as Partial<StickyNotesRow>;
+  const hasCreatedBy = row.created_by === null || typeof row.created_by === "string";
+
+  return (
+    typeof row.id === "string" &&
+    typeof row.board_id === "string" &&
+    typeof row.text === "string" &&
+    typeof row.color === "string" &&
+    typeof row.x === "number" &&
+    typeof row.y === "number" &&
+    typeof row.rotation === "number" &&
+    typeof row.created_at === "string" &&
+    typeof row.updated_at === "string" &&
+    hasCreatedBy
+  );
+};
+
 const mapRowToStickyNoteRecord = (row: StickyNotesRow): StickyNoteRecord => ({
   id: row.id,
   boardId: row.board_id,
@@ -57,7 +79,13 @@ const getRequiredSupabaseClient = () => {
 
 const toRealtimeRecord = (
   payload: RealtimePostgresChangesPayload<StickyNotesRow>
-): StickyNoteRecord => mapRowToStickyNoteRecord(payload.new);
+): StickyNoteRecord | null => {
+  if (!isStickyNotesRow(payload.new)) {
+    return null;
+  }
+
+  return mapRowToStickyNoteRecord(payload.new);
+};
 
 export const listStickyNotes = async (boardId: string): Promise<StickyNoteRecord[]> => {
   const client = getRequiredSupabaseClient();
@@ -159,7 +187,10 @@ export const subscribeToStickyNotes = (
         filter: `board_id=eq.${boardId}`,
       },
       (payload: RealtimePostgresChangesPayload<StickyNotesRow>) => {
-        handlers.onInsert(toRealtimeRecord(payload));
+        const note = toRealtimeRecord(payload);
+        if (note) {
+          handlers.onInsert(note);
+        }
       }
     )
     .on(
@@ -171,7 +202,10 @@ export const subscribeToStickyNotes = (
         filter: `board_id=eq.${boardId}`,
       },
       (payload: RealtimePostgresChangesPayload<StickyNotesRow>) => {
-        handlers.onUpdate(toRealtimeRecord(payload));
+        const note = toRealtimeRecord(payload);
+        if (note) {
+          handlers.onUpdate(note);
+        }
       }
     )
     .on(

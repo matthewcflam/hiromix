@@ -207,6 +207,14 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   
   // Sound manager for tick sounds
   const soundManager = useSoundManager({ enabled: true, volume: 0.5 });
+  const {
+    unlockAudio,
+    playTick,
+    playPaperPickup,
+    playPaperPlace,
+    playPaperCrumple,
+    playPaperFall,
+  } = soundManager;
   const scrollVelocityRef = useRef(0);
   const lastScrollTimeRef = useRef(Date.now());
   
@@ -288,6 +296,9 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   useEffect(() => {
     let isMounted = true;
     let realtimeChannel: ReturnType<typeof subscribeToStickyNotes> | null = null;
+    const isRealtimeEnabled = isRealtimeEnabledRef.current;
+    const stickyBoardId = stickyBoardIdRef.current;
+    const textSyncTimeouts = textSyncTimeoutsRef.current;
 
     const loadLocalFallback = (reason: "disabled" | "error") => {
       try {
@@ -316,7 +327,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     };
 
     const initializeRealtime = async () => {
-      if (!isRealtimeEnabledRef.current) {
+      if (!isRealtimeEnabled) {
         loadLocalFallback("disabled");
         return;
       }
@@ -325,14 +336,14 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         setNotesSyncStatus("connecting");
         setNotesSyncMessage("Connecting sticky notes...");
 
-        const initialNotes = await listStickyNotes(stickyBoardIdRef.current);
+        const initialNotes = await listStickyNotes(stickyBoardId);
         if (!isMounted) return;
 
         setNotes(initialNotes);
         setNotesSyncStatus("live");
         setNotesSyncMessage("Live sync connected");
 
-        realtimeChannel = subscribeToStickyNotes(stickyBoardIdRef.current, {
+        realtimeChannel = subscribeToStickyNotes(stickyBoardId, {
           onInsert: (note) => setNoteWithConflictResolution(note),
           onUpdate: (note) => setNoteWithConflictResolution(note),
           onDelete: (noteId) => {
@@ -373,10 +384,10 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
 
     return () => {
       isMounted = false;
-      textSyncTimeoutsRef.current.forEach((timeoutId, noteId) => {
+      textSyncTimeouts.forEach((timeoutId, noteId) => {
         clearTimeout(timeoutId);
 
-        if (!isRealtimeEnabledRef.current) {
+        if (!isRealtimeEnabled) {
           return;
         }
 
@@ -385,11 +396,11 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
           return;
         }
 
-        void updateStickyNote(noteId, stickyBoardIdRef.current, { text: latestNote.text }).catch((error) => {
+        void updateStickyNote(noteId, stickyBoardId, { text: latestNote.text }).catch((error) => {
           console.error(`❌ Failed to flush pending note text sync for ${noteId}:`, error);
         });
       });
-      textSyncTimeoutsRef.current.clear();
+      textSyncTimeouts.clear();
 
       if (realtimeChannel) {
         void unsubscribeFromStickyNotes(realtimeChannel).catch((error) => {
@@ -494,7 +505,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     if (!placementColor || !canvasRef.current) return;
 
     // Play paper place sound
-    soundManager.playPaperPlace();
+    playPaperPlace();
 
     // Get the bounding rectangle of the canvas
     const rect = canvasRef.current.getBoundingClientRect();
@@ -619,22 +630,20 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   };
 
   // Initialize Lenis smooth scrolling
-  // soundManager is a stable hook return value, intentionally not in dependencies
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const markAudioInteraction = () => {
       hasUserInteractedForAudioRef.current = true;
-      soundManager.unlockAudio();
+      unlockAudio();
     };
 
     // Scroll gestures must unlock and audibly prime ticker sound immediately.
     const handleScrollGestureAudio = () => {
       markAudioInteraction();
       if (!hasPlayedInitialScrollTickRef.current) {
-        const played = soundManager.playTick(0.15);
+        const played = playTick(0.15);
         if (played) {
           hasPlayedInitialScrollTickRef.current = true;
         }
@@ -704,8 +713,8 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
 
       // Ensure the very first meaningful scroll movement produces an audible tick.
       if (hasUserInteractedForAudioRef.current && normalizedVelocity > 0.05 && !hasPlayedInitialScrollTickRef.current) {
-        soundManager.unlockAudio();
-        const played = soundManager.playTick(normalizedVelocity);
+        unlockAudio();
+        const played = playTick(normalizedVelocity);
         if (played) {
           hasPlayedInitialScrollTickRef.current = true;
           playedTickThisFrame = true;
@@ -740,8 +749,8 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         // Play tick sound with velocity-based rate
         // Only play if there's meaningful scroll velocity
         if (normalizedVelocity > 0.05 && !playedTickThisFrame) {
-          soundManager.unlockAudio();
-          soundManager.playTick(normalizedVelocity);
+          unlockAudio();
+          playTick(normalizedVelocity);
         }
         
         setRecentTicks(prev => {
@@ -798,7 +807,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       }
       lenis.destroy();
     };
-  }, [positions, ticks]);
+  }, [positions, ticks, playTick, unlockAudio]);
 
   // Clean up old ticks from recent history
   useEffect(() => {
@@ -921,8 +930,8 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         activeColor={placementColor}
         isDeleteMode={isDeleteMode}
         onToggleDeleteMode={handleToggleDeleteMode}
-        onPaperPickupSound={soundManager.playPaperPickup}
-        onPaperCrumpleSound={soundManager.playPaperCrumple}
+        onPaperPickupSound={playPaperPickup}
+        onPaperCrumpleSound={playPaperCrumple}
       />
 
       <div className="fixed right-6 top-6 z-[120] pointer-events-none">
@@ -951,10 +960,10 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       <div
         ref={scrollContainerRef}
         className="h-full w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
-        onWheelCapture={soundManager.unlockAudio}
-        onTouchStartCapture={soundManager.unlockAudio}
-        onPointerDownCapture={soundManager.unlockAudio}
-        onMouseDownCapture={soundManager.unlockAudio}
+        onWheelCapture={unlockAudio}
+        onTouchStartCapture={unlockAudio}
+        onPointerDownCapture={unlockAudio}
+        onMouseDownCapture={unlockAudio}
         style={{
           cursor: placementColor ? 'crosshair' : 'default',
         }}
@@ -1051,7 +1060,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
               onDelete={handleDeleteNote}
               onTextChange={handleNoteTextChange}
               onPositionChange={handleNotePositionChange}
-              onPaperFallSound={soundManager.playPaperFall}
+              onPaperFallSound={playPaperFall}
               canvasBounds={{ width: totalWidth, height: viewportHeight }}
             />
           ))}
