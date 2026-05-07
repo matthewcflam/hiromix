@@ -24,3 +24,35 @@ export interface Playlist {
   tracks: MusicTrack[];
   currentIndex: number;
 }
+
+export interface StickyNoteRecord {
+  id: string;
+  boardId: string;
+  text: string;
+  color: string;
+  x: number;
+  y: number;
+  rotation: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string | null;
+}
+
+export interface StickyNoteInsertInput {
+  id: string;
+  boardId: string;
+  text: string;
+  color: string;
+  x: number;
+  y: number;
+  rotation: number;
+  createdBy?: string | null;
+}
+
+export interface StickyNoteUpdateInput {
+  text?: string;
+  color?: string;
+  x?: number;
+  y?: number;
+  rotation?: number;
+}

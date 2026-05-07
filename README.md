@@ -10,7 +10,7 @@ A timeline based on https://tlb.betteroff.studio/. The following is a summary of
 - **Interactive Sound Effects** - High-quality audio feedback with Howler.js
 - **Video Support** - Autoplay/pause video cards with viewport detection
 - **Music Player** - Fully functional audio playback with Howler.js
-- **Sticky Notes** - Draggable notes with paper textures and deletion animations
+- **Sticky Notes** - Draggable notes with paper textures, deletion animations, and optional realtime sync across users
 - **Timeline Ruler** - Synced date ruler with animated tick sounds
 - **Responsive Design** - Optimized for desktop, tablet, and mobile
 - **Accessibility** - WCAG AA compliant with keyboard navigation
@@ -214,6 +214,7 @@ The sound system works gracefully without audio files - it will display console 
 1. Push to GitHub
 2. Import project in Vercel
 3. Deploy automatically
+4. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for shared realtime sticky notes
 
 ### Other Platforms
 
@@ -231,7 +232,25 @@ Create a `.env.local` file for custom configuration:
 ```env
 # Optional: Custom Unsplash API key for higher rate limits
 NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=your_key_here
+
+# Optional: Supabase realtime sticky notes
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Optional: feature flag (default true)
+NEXT_PUBLIC_STICKY_NOTES_REALTIME=true
 ```
+
+## Realtime Sticky Notes Setup (Supabase)
+
+To share sticky note changes instantly between multiple visitors, configure Supabase:
+
+1. Create a Supabase project.
+2. Run `supabase/sticky_notes_schema.sql` in the Supabase SQL editor.
+3. Copy your project URL and anon key into `.env.local` (and Vercel env vars).
+4. Redeploy your site on Vercel.
+
+When Supabase vars are not configured (or when `NEXT_PUBLIC_STICKY_NOTES_REALTIME=false`), sticky notes automatically fall back to localStorage-only behavior.
 
 ## Credits
 

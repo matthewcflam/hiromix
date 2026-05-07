@@ -54,6 +54,11 @@ export default function StickyNote({
     setPosition({ x: initialX, y: initialY });
   }, [initialX, initialY]);
 
+  // Keep text in sync with external realtime updates.
+  useEffect(() => {
+    setText(initialText);
+  }, [initialText]);
+
   // Boundary check to keep note within canvas bounds (memoized to prevent dependency issues)
   const constrainPosition = useMemo(() => {
     return (x: number, y: number) => {

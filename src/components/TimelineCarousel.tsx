@@ -4,23 +4,31 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElemen
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
-import type { TimelineItem } from "@/types";
+import type { StickyNoteRecord, TimelineItem } from "@/types";
 import StickyNote from "./StickyNote";
 import NotePalette from "./NotePalette";
 import { useSoundManager } from "@/lib/useSoundManager";
+import {
+  createStickyNote,
+  DEFAULT_STICKY_NOTES_BOARD_ID,
+  deleteStickyNote,
+  listStickyNotes,
+  subscribeToStickyNotes,
+  unsubscribeFromStickyNotes,
+  updateStickyNote,
+} from "@/lib/stickyNotesApi";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 interface TimelineCarouselProps {
   items: TimelineItem[];
 }
 
-interface Note {
-  id: string;
-  text: string;
-  color: string;
-  x: number;
-  y: number;
-  rotation: number;
-}
+type Note = StickyNoteRecord;
+
+type NotesSyncStatus = "connecting" | "live" | "local-fallback" | "sync-error";
+
+const STICKY_NOTES_LOCAL_STORAGE_KEY = "timeline-notes";
+const STICKY_NOTE_TEXT_DEBOUNCE_MS = 400;
 
 const removeListenerSafely = (
   target: EventTarget,
@@ -177,16 +185,25 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const previousScrollRef = useRef(0);
   const previousTickRef = useRef(0); // Track previous tick for interpolation
   const [notes, setNotes] = useState<Note[]>([]);
+  const notesRef = useRef<Note[]>([]);
   const [placementColor, setPlacementColor] = useState<string | null>(null);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [notesSyncStatus, setNotesSyncStatus] = useState<NotesSyncStatus>("connecting");
+  const [notesSyncMessage, setNotesSyncMessage] = useState<string | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const rafRef = useRef<number | null>(null);
   const [viewportWidth, setViewportWidth] = useState(1200);
+  const [viewportHeight, setViewportHeight] = useState(900);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTimelineVisible, setIsTimelineVisible] = useState(false);
   const hasPlayedInitialScrollTickRef = useRef(false);
   const hasUserInteractedForAudioRef = useRef(false);
   const hasShownCenteredStateRef = useRef(false);
+  const textSyncTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const stickyBoardIdRef = useRef(DEFAULT_STICKY_NOTES_BOARD_ID);
+  const isRealtimeEnabledRef = useRef(
+    process.env.NEXT_PUBLIC_STICKY_NOTES_REALTIME !== "false" && getSupabaseBrowserClient() !== null
+  );
   
   // Sound manager for tick sounds
   const soundManager = useSoundManager({ enabled: true, volume: 0.5 });
@@ -206,7 +223,9 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   useLayoutEffect(() => {
     const updateScale = () => {
       const vw = scrollContainerRef.current?.clientWidth ?? window.innerWidth;
+      const vh = window.innerHeight;
       setViewportWidth(vw);
+      setViewportHeight(vh);
     };
 
     updateScale();
@@ -214,55 +233,185 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-   // Load notes from localStorage on mount
-   // DEBUG_PERSISTENCE is a constant, not a dependency
-   // eslint-disable-next-line react-hooks/exhaustive-deps
-   useEffect(() => {
-     if (DEBUG_PERSISTENCE) console.log('🔍 Loading notes from localStorage...');
-     
-     // Check if localStorage is available
-     if (typeof window === 'undefined' || !window.localStorage) {
-       console.error('❌ localStorage is not available');
-       setIsInitialized(true);
-       return;
-     }
-
-     try {
-       const saved = localStorage.getItem('timeline-notes');
-       if (DEBUG_PERSISTENCE) console.log('📦 Raw localStorage data:', saved);
-       
-       if (saved) {
-         const parsed = JSON.parse(saved);
-         if (DEBUG_PERSISTENCE) console.log(`✅ Loaded ${parsed.length} notes from localStorage:`, parsed);
-         setNotes(parsed);
-       } else {
-         if (DEBUG_PERSISTENCE) console.log('ℹ️ No saved notes found in localStorage');
-       }
-     } catch (e) {
-       console.error('❌ Failed to load notes:', e);
-     } finally {
-       setIsInitialized(true);
-     }
-   }, []);
-
-  // Save notes to localStorage whenever they change (but only after initial load)
-  // DEBUG_PERSISTENCE is a constant debug flag, intentionally not in dependencies
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!isInitialized) {
-      if (DEBUG_PERSISTENCE) console.log('⏸️ Skipping save - not initialized yet');
+    notesRef.current = notes;
+  }, [notes]);
+
+  const loadNotesFromLocalStorage = (): Note[] => {
+    if (typeof window === "undefined" || !window.localStorage) {
+      return [];
+    }
+
+    const saved = localStorage.getItem(STICKY_NOTES_LOCAL_STORAGE_KEY);
+    if (!saved) {
+      return [];
+    }
+
+    const parsed = JSON.parse(saved) as Array<Partial<Note>>;
+    const nowIso = new Date().toISOString();
+
+    return parsed
+      .filter((note) => typeof note.id === "string" && note.id.length > 0)
+      .map((note) => ({
+        id: note.id as string,
+        boardId: typeof note.boardId === "string" ? note.boardId : stickyBoardIdRef.current,
+        text: typeof note.text === "string" ? note.text : "",
+        color: typeof note.color === "string" ? note.color : "yellow",
+        x: typeof note.x === "number" ? note.x : 0,
+        y: typeof note.y === "number" ? note.y : 0,
+        rotation: typeof note.rotation === "number" ? note.rotation : 0,
+        createdAt: typeof note.createdAt === "string" ? note.createdAt : nowIso,
+        updatedAt: typeof note.updatedAt === "string" ? note.updatedAt : nowIso,
+        createdBy: typeof note.createdBy === "string" ? note.createdBy : null,
+      }));
+  };
+
+  const setNoteWithConflictResolution = (incomingNote: Note) => {
+    setNotes((prevNotes) => {
+      const existing = prevNotes.find((note) => note.id === incomingNote.id);
+      if (!existing) {
+        return [...prevNotes, incomingNote];
+      }
+
+      const incomingTs = Date.parse(incomingNote.updatedAt);
+      const existingTs = Date.parse(existing.updatedAt);
+      const shouldReplace = Number.isNaN(existingTs) || incomingTs >= existingTs;
+
+      if (!shouldReplace) {
+        return prevNotes;
+      }
+
+      return prevNotes.map((note) => (note.id === incomingNote.id ? incomingNote : note));
+    });
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    let realtimeChannel: ReturnType<typeof subscribeToStickyNotes> | null = null;
+
+    const loadLocalFallback = (reason: "disabled" | "error") => {
+      try {
+        const localNotes = loadNotesFromLocalStorage();
+        if (isMounted) {
+          setNotes(localNotes);
+          setNotesSyncStatus(reason === "disabled" ? "local-fallback" : "sync-error");
+          setNotesSyncMessage(
+            reason === "disabled"
+              ? "Realtime is disabled. Notes are stored per browser."
+              : "Realtime unavailable. Showing local cached notes."
+          );
+        }
+      } catch (error) {
+        console.error("❌ Failed to load local sticky notes fallback:", error);
+        if (isMounted) {
+          setNotes([]);
+          setNotesSyncStatus("sync-error");
+          setNotesSyncMessage("Failed to load sticky notes.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitialized(true);
+        }
+      }
+    };
+
+    const initializeRealtime = async () => {
+      if (!isRealtimeEnabledRef.current) {
+        loadLocalFallback("disabled");
+        return;
+      }
+
+      try {
+        setNotesSyncStatus("connecting");
+        setNotesSyncMessage("Connecting sticky notes...");
+
+        const initialNotes = await listStickyNotes(stickyBoardIdRef.current);
+        if (!isMounted) return;
+
+        setNotes(initialNotes);
+        setNotesSyncStatus("live");
+        setNotesSyncMessage("Live sync connected");
+
+        realtimeChannel = subscribeToStickyNotes(stickyBoardIdRef.current, {
+          onInsert: (note) => setNoteWithConflictResolution(note),
+          onUpdate: (note) => setNoteWithConflictResolution(note),
+          onDelete: (noteId) => {
+            setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
+          },
+          onStatusChange: (status) => {
+            if (!isMounted) return;
+
+            if (status === "SUBSCRIBED") {
+              setNotesSyncStatus("live");
+              setNotesSyncMessage("Live sync connected");
+              return;
+            }
+
+            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+              setNotesSyncStatus("sync-error");
+              setNotesSyncMessage("Realtime connection dropped. Trying to reconnect...");
+              return;
+            }
+
+            if (status === "CLOSED") {
+              setNotesSyncStatus("sync-error");
+              setNotesSyncMessage("Realtime connection closed.");
+            }
+          },
+        });
+      } catch (error) {
+        console.error("❌ Failed to initialize realtime sticky notes:", error);
+        loadLocalFallback("error");
+      } finally {
+        if (isMounted) {
+          setIsInitialized(true);
+        }
+      }
+    };
+
+    void initializeRealtime();
+
+    return () => {
+      isMounted = false;
+      textSyncTimeoutsRef.current.forEach((timeoutId, noteId) => {
+        clearTimeout(timeoutId);
+
+        if (!isRealtimeEnabledRef.current) {
+          return;
+        }
+
+        const latestNote = notesRef.current.find((note) => note.id === noteId);
+        if (!latestNote) {
+          return;
+        }
+
+        void updateStickyNote(noteId, stickyBoardIdRef.current, { text: latestNote.text }).catch((error) => {
+          console.error(`❌ Failed to flush pending note text sync for ${noteId}:`, error);
+        });
+      });
+      textSyncTimeoutsRef.current.clear();
+
+      if (realtimeChannel) {
+        void unsubscribeFromStickyNotes(realtimeChannel).catch((error) => {
+          console.error("❌ Failed to unsubscribe sticky notes channel:", error);
+        });
+      }
+    };
+  }, []);
+
+  // Cache latest notes in localStorage for fast reloads and offline fallback.
+  useEffect(() => {
+    if (!isInitialized || typeof window === "undefined" || !window.localStorage) {
       return;
     }
 
-    if (DEBUG_PERSISTENCE) console.log(`💾 Saving ${notes.length} notes to localStorage:`, notes);
-    
     try {
-      localStorage.setItem('timeline-notes', JSON.stringify(notes));
-      if (DEBUG_PERSISTENCE) console.log('✅ Notes saved successfully');
-    } catch (e) {
-      console.error('❌ Failed to save notes:', e);
+      localStorage.setItem(STICKY_NOTES_LOCAL_STORAGE_KEY, JSON.stringify(notes));
+      if (DEBUG_PERSISTENCE) console.log(`💾 Cached ${notes.length} sticky notes locally`);
+    } catch (error) {
+      console.error("❌ Failed to cache sticky notes locally:", error);
     }
-  }, [notes, isInitialized]);
+  }, [notes, isInitialized, DEBUG_PERSISTENCE]);
 
   // Format date as "Month Day, Year"
   const formatDate = (dateString: string) => {
@@ -299,6 +448,44 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     setIsDeleteMode(newDeleteMode);
   };
 
+  const createNoteId = () => {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  };
+
+  const syncNoteText = (noteId: string, text: string) => {
+    if (!isRealtimeEnabledRef.current) return;
+
+    void updateStickyNote(noteId, stickyBoardIdRef.current, { text })
+      .then((serverNote) => {
+        setNoteWithConflictResolution(serverNote);
+      })
+      .catch((error) => {
+        console.error(`❌ Failed to sync note text for ${noteId}:`, error);
+        setNotesSyncStatus("sync-error");
+        setNotesSyncMessage("Failed to sync note text.");
+      });
+  };
+
+  const scheduleNoteTextSync = (noteId: string, text: string) => {
+    if (!isRealtimeEnabledRef.current) return;
+
+    const existingTimeout = textSyncTimeoutsRef.current.get(noteId);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+
+    const timeoutId = setTimeout(() => {
+      textSyncTimeoutsRef.current.delete(noteId);
+      syncNoteText(noteId, text);
+    }, STICKY_NOTE_TEXT_DEBOUNCE_MS);
+
+    textSyncTimeoutsRef.current.set(noteId, timeoutId);
+  };
+
   // Handle click on canvas to place note
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Don't place notes if in delete mode
@@ -319,38 +506,116 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     const x = e.clientX - rect.left - (noteSize / 2);
     const y = e.clientY - rect.top - (noteSize / 2);
 
+    const nowIso = new Date().toISOString();
     const newNote: Note = {
-      id: Date.now().toString(),
+      id: createNoteId(),
+      boardId: stickyBoardIdRef.current,
       text: '',
       color: placementColor,
       x,
       y,
       rotation: 0, // No rotation - perfectly aligned
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      createdBy: null,
     };
 
     setNotes(prevNotes => [...prevNotes, newNote]);
+
+    if (isRealtimeEnabledRef.current) {
+      void createStickyNote({
+        id: newNote.id,
+        boardId: newNote.boardId,
+        text: newNote.text,
+        color: newNote.color,
+        x: newNote.x,
+        y: newNote.y,
+        rotation: newNote.rotation,
+        createdBy: newNote.createdBy,
+      })
+        .then((serverNote) => {
+          setNoteWithConflictResolution(serverNote);
+        })
+        .catch((error) => {
+          console.error(`❌ Failed to create sticky note ${newNote.id}:`, error);
+          setNotesSyncStatus("sync-error");
+          setNotesSyncMessage("Failed to create sticky note.");
+        });
+    }
+
     // Automatically deselect color after placing one note
     setPlacementColor(null);
   };
 
   // Delete note
   const handleDeleteNote = (noteId: string) => {
+    const noteToDelete = notesRef.current.find((note) => note.id === noteId) ?? null;
     setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+    const pendingTimeout = textSyncTimeoutsRef.current.get(noteId);
+    if (pendingTimeout) {
+      clearTimeout(pendingTimeout);
+      textSyncTimeoutsRef.current.delete(noteId);
+    }
+
+    if (isRealtimeEnabledRef.current) {
+      void deleteStickyNote(noteId, stickyBoardIdRef.current).catch((error) => {
+        console.error(`❌ Failed to delete sticky note ${noteId}:`, error);
+        setNotesSyncStatus("sync-error");
+        setNotesSyncMessage("Failed to delete sticky note.");
+        if (noteToDelete) {
+          setNoteWithConflictResolution(noteToDelete);
+        }
+      });
+    }
+
     // Keep delete mode active - user must manually click delete button to exit
   };
 
   // Update note text
   const handleNoteTextChange = (noteId: string, text: string) => {
+    const nowIso = new Date().toISOString();
     setNotes(prevNotes => prevNotes.map(note => 
-      note.id === noteId ? { ...note, text } : note
+      note.id === noteId ? { ...note, text, updatedAt: nowIso } : note
     ));
+    scheduleNoteTextSync(noteId, text);
   };
 
   // Update note position
   const handleNotePositionChange = (noteId: string, x: number, y: number) => {
-    setNotes(prevNotes => prevNotes.map(note => 
-      note.id === noteId ? { ...note, x, y } : note
-    ));
+    let previousPosition: { x: number; y: number } | null = null;
+    const nowIso = new Date().toISOString();
+
+    setNotes(prevNotes => prevNotes.map(note => {
+      if (note.id !== noteId) return note;
+      previousPosition = { x: note.x, y: note.y };
+      return { ...note, x, y, updatedAt: nowIso };
+    }));
+
+    if (isRealtimeEnabledRef.current) {
+      void updateStickyNote(noteId, stickyBoardIdRef.current, { x, y })
+        .then((serverNote) => {
+          setNoteWithConflictResolution(serverNote);
+        })
+        .catch((error) => {
+          console.error(`❌ Failed to sync sticky note position for ${noteId}:`, error);
+          setNotesSyncStatus("sync-error");
+          setNotesSyncMessage("Failed to sync note movement.");
+          if (previousPosition) {
+            const { x: previousX, y: previousY } = previousPosition;
+            setNotes((prevNotes) =>
+              prevNotes.map((note) =>
+                note.id === noteId
+                  ? {
+                      ...note,
+                      x: previousX,
+                      y: previousY,
+                    }
+                  : note
+              )
+            );
+          }
+        });
+    }
   };
 
   // Initialize Lenis smooth scrolling
@@ -660,6 +925,29 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         onPaperCrumpleSound={soundManager.playPaperCrumple}
       />
 
+      <div className="fixed right-6 top-6 z-[120] pointer-events-none">
+        <div
+          className={`rounded-full px-3 py-1 text-[11px] font-medium tracking-wide shadow-sm ${
+            notesSyncStatus === "live"
+              ? "bg-green-100 text-green-800"
+              : notesSyncStatus === "connecting"
+              ? "bg-blue-100 text-blue-800"
+              : notesSyncStatus === "local-fallback"
+              ? "bg-gray-100 text-gray-700"
+              : "bg-red-100 text-red-800"
+          }`}
+          title={notesSyncMessage ?? "Sticky notes sync status"}
+        >
+          {notesSyncStatus === "live"
+            ? "Notes: Live"
+            : notesSyncStatus === "connecting"
+            ? "Notes: Connecting"
+            : notesSyncStatus === "local-fallback"
+            ? "Notes: Local only"
+            : "Notes: Sync error"}
+        </div>
+      </div>
+
       <div
         ref={scrollContainerRef}
         className="h-full w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
@@ -764,7 +1052,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
               onTextChange={handleNoteTextChange}
               onPositionChange={handleNotePositionChange}
               onPaperFallSound={soundManager.playPaperFall}
-              canvasBounds={{ width: totalWidth, height: window.innerHeight }}
+              canvasBounds={{ width: totalWidth, height: viewportHeight }}
             />
           ))}
 
