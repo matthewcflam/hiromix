@@ -1,6 +1,5 @@
 import type {
   RealtimeChannel,
-  RealtimeChannelStatus,
   RealtimePostgresChangesPayload,
 } from "@supabase/supabase-js";
 import type {
@@ -30,7 +29,7 @@ interface StickyNotesChannelHandlers {
   onInsert: (note: StickyNoteRecord) => void;
   onUpdate: (note: StickyNoteRecord) => void;
   onDelete: (noteId: string) => void;
-  onStatusChange?: (status: RealtimeChannelStatus) => void;
+  onStatusChange?: (status: string) => void;
 }
 
 const mapRowToStickyNoteRecord = (row: StickyNotesRow): StickyNoteRecord => ({
