@@ -105,7 +105,7 @@ export const timelineData: TimelineItem[] = [
     id: "15",
     date: "2025-11-09T00:00:00.000Z",
     type: "video",
-    src: "/images/elevatorAnne1.jpg",
+    src: "/images/twoducks.webp",
     videoSrc: "/videos/poolAnne.MOV",
     width: "landscape",
   },
