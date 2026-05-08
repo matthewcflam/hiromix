@@ -124,8 +124,7 @@ The timeline automatically positions content based on dates and adjusts spacing 
   src: "/media/images/photo.jpg",
   width: "portrait" | "square" | "landscape",
   category: "Category Name",
-  videoSrc: "/media/videos/clip.mov", // for video type
-  videoMp4Src: "/media/videos/clip.mp4" // optional mp4 fallback for better compatibility
+  videoSrc: "/media/videos/clip.mp4" // for video type
 }
 ```
 

@@ -81,7 +81,6 @@ for (const [index, objectSource] of objects.entries()) {
   const type = getField(objectSource, "type");
   const src = getField(objectSource, "src");
   const videoSrc = getField(objectSource, "videoSrc");
-  const videoMp4Src = getField(objectSource, "videoMp4Src");
   const label = id ? `id=${id}` : `entry #${index + 1}`;
 
   if (!id) {
@@ -108,16 +107,9 @@ for (const [index, objectSource] of objects.entries()) {
       errors.push(`${label}: type=video requires "videoSrc".`);
     } else {
       ensurePublicAsset(id, "videoSrc", videoSrc);
-      if (videoMp4Src) {
-        ensurePublicAsset(id, "videoMp4Src", videoMp4Src);
-        if (!videoMp4Src.toLowerCase().endsWith(".mp4")) {
-          warnings.push(`${label}: videoMp4Src is expected to be .mp4 but found "${videoMp4Src}".`);
-        }
-      }
-
-      if (videoSrc.toLowerCase().endsWith(".mov") && !videoMp4Src) {
+      if (videoSrc.toLowerCase().endsWith(".mov")) {
         warnings.push(
-          `${label}: uses MOV (${videoSrc}) without videoMp4Src fallback. Consider adding H.264/AAC mp4.`
+          `${label}: uses MOV (${videoSrc}). Consider MP4/H.264 for broader browser compatibility.`
         );
       }
     }

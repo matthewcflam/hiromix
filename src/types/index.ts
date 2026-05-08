@@ -7,7 +7,6 @@ export interface TimelineItem {
   category?: string;
   description?: string;
   videoSrc?: string; // For video type
-  videoMp4Src?: string; // Optional MP4 source to improve cross-browser compatibility
   song?: string; // Optional song reference
 }
 

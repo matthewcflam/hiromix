@@ -643,9 +643,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   };
 
   const handleVideoError = (item: TimelineItem) => {
-    console.error(
-      `❌ Failed to load timeline video. id=${item.id}, videoSrc=${item.videoSrc}, videoMp4Src=${item.videoMp4Src}`
-    );
+    console.error(`❌ Failed to load timeline video. id=${item.id}, videoSrc=${item.videoSrc}`);
     setFailedVideoIds((prev) => {
       if (prev.has(item.id)) {
         return prev;
@@ -655,32 +653,6 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       next.add(item.id);
       return next;
     });
-  };
-
-  const getVideoMimeType = (src: string) => {
-    const lower = src.toLowerCase();
-    if (lower.endsWith(".mp4")) return "video/mp4";
-    if (lower.endsWith(".mov")) return "video/quicktime";
-    if (lower.endsWith(".webm")) return "video/webm";
-    if (lower.endsWith(".ogg")) return "video/ogg";
-    return undefined;
-  };
-
-  const getVideoSources = (item: TimelineItem): Array<{ src: string; type?: string }> => {
-    const candidates = [item.videoMp4Src, item.videoSrc].filter(
-      (value): value is string => typeof value === "string" && value.length > 0
-    );
-
-    const seen = new Set<string>();
-    const sources: Array<{ src: string; type?: string }> = [];
-
-    candidates.forEach((src) => {
-      if (seen.has(src)) return;
-      seen.add(src);
-      sources.push({ src, type: getVideoMimeType(src) });
-    });
-
-    return sources;
   };
 
   // Initialize Lenis smooth scrolling
@@ -1034,7 +1006,6 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
           {positions.map((pos, index) => {
             const item = pos.item;
             const hasFailedVideo = failedVideoIds.has(item.id);
-            const videoSources = item.type === "video" ? getVideoSources(item) : [];
 
             return (
               <motion.div
@@ -1055,8 +1026,9 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 {/* Image or Video */}
-                {item.type === 'video' && videoSources.length > 0 && !hasFailedVideo ? (
+                {item.type === 'video' && item.videoSrc && !hasFailedVideo ? (
                   <video
+                    src={item.videoSrc}
                     className="h-full w-full object-cover"
                     autoPlay
                     loop
@@ -1066,11 +1038,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                     poster={item.src}
                     onLoadedData={() => handleVideoLoaded(item.id)}
                     onError={() => handleVideoError(item)}
-                  >
-                    {videoSources.map((source) => (
-                      <source key={`${item.id}-${source.src}`} src={source.src} type={source.type} />
-                    ))}
-                  </video>
+                  />
                 ) : (
                   <>
                     <Image

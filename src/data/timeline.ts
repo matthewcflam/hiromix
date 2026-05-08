@@ -34,7 +34,7 @@ export const timelineData: TimelineItem[] = [
     date: "2025-08-30T00:00:00.000Z",
     type: "video",
     src: "/images/twoducks.webp",
-    videoSrc: "/videos/endofGU!.mov",
+    videoSrc: "/videos/endofGU.MOV",
     width: "landscape",
   },
   {
@@ -94,12 +94,12 @@ export const timelineData: TimelineItem[] = [
     src: "/images/thefirsttiramisu.jpg",
     width: "square",
   },
-   {
+  {
     id: "14",
     date: "2025-11-03T00:00:00.000Z",
     type: "image",
     src: "/images/pandaandanne.jpg",
-    width: "portrait",
+    width: "landscape",
   },
   {
     id: "15",
