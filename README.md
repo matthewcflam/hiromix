@@ -43,6 +43,11 @@ npm run dev
 5. **Open your browser:**
 Navigate to [http://localhost:3000](http://localhost:3000)
 
+6. **Validate timeline media mappings (recommended):**
+```bash
+npm run validate:timeline
+```
+
 ### Build for Production
 
 ```bash
@@ -119,7 +124,8 @@ The timeline automatically positions content based on dates and adjusts spacing 
   src: "/media/images/photo.jpg",
   width: "portrait" | "square" | "landscape",
   category: "Category Name",
-  videoSrc: "/media/videos/clip.mp4" // for video type
+  videoSrc: "/media/videos/clip.mov", // for video type
+  videoMp4Src: "/media/videos/clip.mp4" // optional mp4 fallback for better compatibility
 }
 ```
 

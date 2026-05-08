@@ -188,6 +188,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const notesRef = useRef<Note[]>([]);
   const [placementColor, setPlacementColor] = useState<string | null>(null);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [failedVideoIds, setFailedVideoIds] = useState<Set<string>>(new Set());
   const [notesSyncStatus, setNotesSyncStatus] = useState<NotesSyncStatus>("connecting");
   const [notesSyncMessage, setNotesSyncMessage] = useState<string | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
@@ -629,6 +630,59 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     }
   };
 
+  const handleVideoLoaded = (itemId: string) => {
+    setFailedVideoIds((prev) => {
+      if (!prev.has(itemId)) {
+        return prev;
+      }
+
+      const next = new Set(prev);
+      next.delete(itemId);
+      return next;
+    });
+  };
+
+  const handleVideoError = (item: TimelineItem) => {
+    console.error(
+      `❌ Failed to load timeline video. id=${item.id}, videoSrc=${item.videoSrc}, videoMp4Src=${item.videoMp4Src}`
+    );
+    setFailedVideoIds((prev) => {
+      if (prev.has(item.id)) {
+        return prev;
+      }
+
+      const next = new Set(prev);
+      next.add(item.id);
+      return next;
+    });
+  };
+
+  const getVideoMimeType = (src: string) => {
+    const lower = src.toLowerCase();
+    if (lower.endsWith(".mp4")) return "video/mp4";
+    if (lower.endsWith(".mov")) return "video/quicktime";
+    if (lower.endsWith(".webm")) return "video/webm";
+    if (lower.endsWith(".ogg")) return "video/ogg";
+    return undefined;
+  };
+
+  const getVideoSources = (item: TimelineItem): Array<{ src: string; type?: string }> => {
+    const candidates = [item.videoMp4Src, item.videoSrc].filter(
+      (value): value is string => typeof value === "string" && value.length > 0
+    );
+
+    const seen = new Set<string>();
+    const sources: Array<{ src: string; type?: string }> = [];
+
+    candidates.forEach((src) => {
+      if (seen.has(src)) return;
+      seen.add(src);
+      sources.push({ src, type: getVideoMimeType(src) });
+    });
+
+    return sources;
+  };
+
   // Initialize Lenis smooth scrolling
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -979,6 +1033,8 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
           {/* Floating images - equal spacing */}
           {positions.map((pos, index) => {
             const item = pos.item;
+            const hasFailedVideo = failedVideoIds.has(item.id);
+            const videoSources = item.type === "video" ? getVideoSources(item) : [];
 
             return (
               <motion.div
@@ -999,25 +1055,39 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 {/* Image or Video */}
-                {item.type === 'video' && item.videoSrc ? (
+                {item.type === 'video' && videoSources.length > 0 && !hasFailedVideo ? (
                   <video
-                    src={item.videoSrc}
                     className="h-full w-full object-cover"
                     autoPlay
                     loop
                     muted
                     playsInline
-                  />
+                    preload="metadata"
+                    poster={item.src}
+                    onLoadedData={() => handleVideoLoaded(item.id)}
+                    onError={() => handleVideoError(item)}
+                  >
+                    {videoSources.map((source) => (
+                      <source key={`${item.id}-${source.src}`} src={source.src} type={source.type} />
+                    ))}
+                  </video>
                 ) : (
-                  <Image
-                    src={item.src}
-                    alt="Content"
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover"
-                    priority={index === 0}
-                    loading={index <= 2 ? "eager" : "lazy"}
-                  />
+                  <>
+                    <Image
+                      src={item.src}
+                      alt="Content"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover"
+                      priority={index === 0}
+                      loading={index <= 2 ? "eager" : "lazy"}
+                    />
+                    {item.type === "video" && hasFailedVideo && (
+                      <div className="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium tracking-wide text-white">
+                        VIDEO UNAVAILABLE
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Hover labels */}

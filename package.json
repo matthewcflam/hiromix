@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "validate:timeline": "node scripts/validate-timeline-media.mjs",
+    "build": "npm run validate:timeline && next build",
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true next build"
