@@ -158,6 +158,7 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
             monthLabel: (isFirstTick && isMonthStart) 
               ? `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`
               : undefined,
+            index: -1,
           });
         } else if (isFirstTick && isMonthStart && !existing.monthLabel) {
           // Preserve month label if this tick has one but existing doesn't
@@ -171,14 +172,15 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
       const roundedX = Math.round(tickX);
       
       const existing = tickMap.get(roundedX);
-      if (!existing) {
-        tickMap.set(roundedX, {
-          x: roundedX, // CRITICAL: Use rounded value for rendering too
-          isMonthStart: isMonthStart,
-          monthLabel: isMonthStart 
-            ? `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`
-            : undefined,
-        });
+        if (!existing) {
+          tickMap.set(roundedX, {
+            x: roundedX, // CRITICAL: Use rounded value for rendering too
+            isMonthStart: isMonthStart,
+            monthLabel: isMonthStart 
+              ? `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`
+              : undefined,
+            index: -1,
+          });
       } else if (isMonthStart && !existing.monthLabel) {
         // Preserve month label if this tick has one but existing doesn't
         existing.isMonthStart = true;
