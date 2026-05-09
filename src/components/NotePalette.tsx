@@ -7,7 +7,6 @@ interface NotePaletteProps {
   activeColor: string | null;
   isDeleteMode: boolean;
   onToggleDeleteMode: () => void;
-  onPaperPickupSound?: () => void;
   onPaperCrumpleSound?: () => void;
 }
 
@@ -16,7 +15,6 @@ export default function NotePalette({
   activeColor, 
   isDeleteMode,
   onToggleDeleteMode,
-  onPaperPickupSound,
   onPaperCrumpleSound,
 }: NotePaletteProps) {
   const notes = [
@@ -25,7 +23,7 @@ export default function NotePalette({
       label: '',
       gradient: 'linear-gradient(135deg, #fff5cc 0%, #ffecb3 50%, #ffe299 100%)',
       rotation: 12,
-      zIndex: 30,
+      zIndex: 40,
       offset: { x: 0, y: 0 },
     },
     {
@@ -33,29 +31,34 @@ export default function NotePalette({
       label: '',
       gradient: 'linear-gradient(135deg, #d5f4d5 0%, #c1ecc1 50%, #ade4ad 100%)',
       rotation: -6,
-      zIndex: 20,
+      zIndex: 30,
       offset: { x: 85, y: 10 },
     },
     {
       id: 'pink',
-      label: 'Delete',
-      gradient: 'linear-gradient(135deg, #fef5f7 0%, #fde8ed 50%, #fbd9e3 100%)',
+      label: '',
+      gradient: '#FFC5D3',
       rotation: 8,
+      zIndex: 20,
+      offset: { x: 210, y: 2 },
+    },
+    {
+      id: 'delete',
+      label: '',
+      gradient: 'transparent',
+      rotation: -4,
       zIndex: 10,
-      offset: { x: 195, y: 1 },
+      offset: { x: 300, y: 3 },
       isDelete: true,
     },
   ];
 
   const handleNoteClick = (noteId: string, isDelete?: boolean) => {
+    onPaperCrumpleSound?.();
+
     if (isDelete) {
-      // Play crumple sound when toggling delete mode
-      onPaperCrumpleSound?.();
       onToggleDeleteMode();
     } else {
-      // Play paper pickup sound when selecting a note
-      onPaperPickupSound?.();
-      
       if (activeColor === noteId) {
         onColorSelect('');
       } else {
@@ -68,7 +71,7 @@ export default function NotePalette({
     <div 
       className="fixed left-8 -top-16 z-[100]"
     >
-      <div className="relative" style={{ width: '350px', height: '250px' }}>
+      <div className="relative" style={{ width: '420px', height: '250px' }}>
         {notes.map((note) => {
           const isActive = note.isDelete ? isDeleteMode : activeColor === note.id;
           
@@ -107,75 +110,99 @@ export default function NotePalette({
               }}
             >
               {/* Thick paper stack edge (side profile) */}
-              <div
-                className="absolute rounded-sm"
-                style={{
-                  top: '4px',
-                  left: note.id === 'yellow' ? '4px' : '3px',
-                  width: '100%',
-                  height: '100%',
-                  background: note.id === 'yellow' 
-                    ? 'linear-gradient(135deg, #e6d89f 0%, #d4c48a 50%, #c2b076 100%)'
-                    : note.id === 'green'
-                    ? 'linear-gradient(135deg, #a8d4a8 0%, #8fbc8f 50%, #76a476 100%)'
-                    : 'linear-gradient(135deg, #e6c4ce 0%, #d4aab4 50%, #c2909a 100%)',
-                  boxShadow: `
-                    0 4px 8px rgba(0, 0, 0, 0.15),
-                    0 2px 4px rgba(0, 0, 0, 0.1)
-                  `,
-                  zIndex: -1,
-                }}
-              />
+              {!note.isDelete ? (
+                <div
+                  className="absolute rounded-sm"
+                  style={{
+                    top: '4px',
+                    left: note.id === 'yellow' ? '4px' : '3px',
+                    width: '100%',
+                    height: '100%',
+                    background: note.id === 'yellow' 
+                      ? 'linear-gradient(135deg, #e6d89f 0%, #d4c48a 50%, #c2b076 100%)'
+                      : note.id === 'green'
+                      ? 'linear-gradient(135deg, #a8d4a8 0%, #8fbc8f 50%, #76a476 100%)'
+                      : 'linear-gradient(135deg, #e7bccb 0%, #dca9bc 50%, #cf95ab 100%)',
+                    boxShadow: `
+                      0 4px 8px rgba(0, 0, 0, 0.15),
+                      0 2px 4px rgba(0, 0, 0, 0.1)
+                    `,
+                    zIndex: -1,
+                  }}
+                />
+              ) : (
+                <div
+                  className="absolute rounded-sm"
+                  style={{
+                    top: '4px',
+                    left: '3px',
+                    width: '100%',
+                    height: '100%',
+                    border: '3px solid rgba(156, 163, 175, 0.7)',
+                    boxShadow: `
+                      0 2px 4px rgba(0, 0, 0, 0.1),
+                      0 1px 2px rgba(0, 0, 0, 0.08)
+                    `,
+                    zIndex: -1,
+                  }}
+                />
+              )}
 
               {/* Main sticky note with realistic depth */}
               <div
                 className="relative w-full h-full rounded-sm overflow-hidden"
                 style={{
-                  background: note.gradient,
-                  boxShadow: isActive
+                  background: note.isDelete ? 'transparent' : note.gradient,
+                  boxShadow: note.isDelete
+                    ? 'none'
+                    : isActive
                     ? `
-                      0 3px 8px rgba(0, 0, 0, 0.15),
-                      0 1px 4px rgba(0, 0, 0, 0.1),
-                      inset 0 -3px 6px rgba(0, 0, 0, 0.12),
-                      inset 0 2px 2px rgba(255, 255, 255, 0.6),
-                      inset -2px 0 4px rgba(0, 0, 0, 0.08),
-                      inset 2px 0 4px rgba(0, 0, 0, 0.08)
-                    `
+                        0 3px 8px rgba(0, 0, 0, 0.15),
+                        0 1px 4px rgba(0, 0, 0, 0.1),
+                        inset 0 -3px 6px rgba(0, 0, 0, 0.12),
+                        inset 0 2px 2px rgba(255, 255, 255, 0.6),
+                        inset -2px 0 4px rgba(0, 0, 0, 0.08),
+                        inset 2px 0 4px rgba(0, 0, 0, 0.08)
+                      `
                     : note.id === 'yellow'
                     ? `
-                      0 6px 12px rgba(0, 0, 0, 0.18),
-                      0 3px 6px rgba(0, 0, 0, 0.12),
-                      0 2px 3px rgba(0, 0, 0, 0.1),
-                      inset 0 -3px 6px rgba(0, 0, 0, 0.12),
-                      inset 0 2px 2px rgba(255, 255, 255, 0.6),
-                      inset -2px 0 4px rgba(0, 0, 0, 0.08),
-                      inset 2px 0 4px rgba(0, 0, 0, 0.08)
-                    `
+                        0 6px 12px rgba(0, 0, 0, 0.18),
+                        0 3px 6px rgba(0, 0, 0, 0.12),
+                        0 2px 3px rgba(0, 0, 0, 0.1),
+                        inset 0 -3px 6px rgba(0, 0, 0, 0.12),
+                        inset 0 2px 2px rgba(255, 255, 255, 0.6),
+                        inset -2px 0 4px rgba(0, 0, 0, 0.08),
+                        inset 2px 0 4px rgba(0, 0, 0, 0.08)
+                      `
                     : `
-                      0 4px 8px rgba(0, 0, 0, 0.15),
-                      0 2px 4px rgba(0, 0, 0, 0.1),
-                      inset 0 -3px 6px rgba(0, 0, 0, 0.12),
-                      inset 0 2px 2px rgba(255, 255, 255, 0.6),
-                      inset -2px 0 4px rgba(0, 0, 0, 0.08),
-                      inset 2px 0 4px rgba(0, 0, 0, 0.08)
-                    `,
-                  border: '1px solid rgba(0, 0, 0, 0.08)',
+                        0 4px 8px rgba(0, 0, 0, 0.15),
+                        0 2px 4px rgba(0, 0, 0, 0.1),
+                        inset 0 -3px 6px rgba(0, 0, 0, 0.12),
+                        inset 0 2px 2px rgba(255, 255, 255, 0.6),
+                        inset -2px 0 4px rgba(0, 0, 0, 0.08),
+                        inset 2px 0 4px rgba(0, 0, 0, 0.08)
+                      `,
+                  border: note.isDelete
+                    ? `3px solid ${isActive ? '#4B5563' : '#9CA3AF'}`
+                    : '1px solid rgba(0, 0, 0, 0.08)',
                 }}
               >
                 {/* Paper texture overlay */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `
-                      url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")
-                    `,
-                    mixBlendMode: 'multiply',
-                    opacity: 0.4,
-                  }}
-                />
+                {!note.isDelete && (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: `
+                        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")
+                      `,
+                      mixBlendMode: 'multiply',
+                      opacity: 0.4,
+                    }}
+                  />
+                )}
 
                 {/* Paper texture overlay for all notes */}
-                {note.id === 'yellow' && (
+                {(note.id === 'yellow' || note.id === 'pink') && (
                   <div
                     className="absolute inset-0"
                     style={{
@@ -205,42 +232,30 @@ export default function NotePalette({
                     }}
                   />
                 )}
-                {note.isDelete && (
+                {/* Subtle lined paper effect */}
+                {!note.isDelete && (
                   <div
                     className="absolute inset-0"
                     style={{
-                      backgroundImage: 'url("/assets/crumbledpaper.jpg")',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-                      mixBlendMode: 'multiply',
+                      backgroundImage: 'repeating-linear-gradient(180deg, transparent, transparent 21px, rgba(0, 0, 0, 0.03) 21px, rgba(0, 0, 0, 0.03) 22px)',
                       opacity: 0.3,
-                      pointerEvents: 'none',
-                      zIndex: 2,
                     }}
                   />
                 )}
 
-                {/* Subtle lined paper effect */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: 'repeating-linear-gradient(180deg, transparent, transparent 21px, rgba(0, 0, 0, 0.03) 21px, rgba(0, 0, 0, 0.03) 22px)',
-                    opacity: 0.3,
-                  }}
-                />
-
                 {/* Top sticky strip (darker adhesive area) */}
-                <div
-                  className="absolute top-0 left-0 right-0 h-4"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%)',
-                  }}
-                />
+                {!note.isDelete && (
+                  <div
+                    className="absolute top-0 left-0 right-0 h-4"
+                    style={{
+                      background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%)',
+                    }}
+                  />
+                )}
 
                 {/* Content area */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  {!note.isDelete && note.label && (
+                  {note.label ? (
                     <div
                       className="text-center"
                       style={{
@@ -255,20 +270,22 @@ export default function NotePalette({
                     >
                       {note.label}
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Edge curl effect (bottom right corner) */}
-                <div
-                  className="absolute bottom-0 right-0"
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    background: 'linear-gradient(135deg, transparent 0%, rgba(0, 0, 0, 0.08) 100%)',
-                    borderRadius: '0 0 2px 0',
-                    clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
-                  }}
-                />
+                {!note.isDelete && (
+                  <div
+                    className="absolute bottom-0 right-0"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      background: 'linear-gradient(135deg, transparent 0%, rgba(0, 0, 0, 0.08) 100%)',
+                      borderRadius: '0 0 2px 0',
+                      clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
+                    }}
+                  />
+                )}
 
                 {/* Active state indicator - subtle glow */}
                 {isActive && (
@@ -291,7 +308,13 @@ export default function NotePalette({
                     fontFamily: 'var(--font-inter)',
                   }}
                 >
-                  {note.isDelete ? 'Toggle Delete' : (note.id === 'yellow' ? 'Yellow Note' : 'Green Note')}
+                  {note.isDelete
+                    ? 'Toggle Delete'
+                    : note.id === 'yellow'
+                    ? 'Yellow Note'
+                    : note.id === 'green'
+                    ? 'Green Note'
+                    : 'Pink Note'}
                   <div 
                     className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0"
                     style={{

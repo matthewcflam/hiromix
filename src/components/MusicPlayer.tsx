@@ -51,7 +51,18 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [trackLengthSeconds, setTrackLengthSeconds] = useState(tracks[0]?.duration ?? 0);
   const soundRef = useRef<Howl | null>(null);
-  const currentTrack = tracks[currentTrackIndex];
+  const hasTracks = tracks.length > 0;
+  const activeTrackIndex = hasTracks ? Math.min(currentTrackIndex, tracks.length - 1) : 0;
+  const currentTrack = hasTracks ? tracks[activeTrackIndex] : null;
+
+  useEffect(() => {
+    if (!hasTracks) {
+      setCurrentTrackIndex(0);
+      return;
+    }
+
+    setCurrentTrackIndex((prev) => Math.min(prev, tracks.length - 1));
+  }, [hasTracks, tracks.length]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -76,7 +87,7 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
       soundRef.current = null;
     }
 
-    if (!currentTrack.audioSrc) return;
+    if (!currentTrack?.audioSrc) return;
 
     const sound = new Howl({
       src: [currentTrack.audioSrc],
@@ -104,7 +115,7 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
         soundRef.current = null;
       }
     };
-  }, [currentTrackIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTrackIndex, currentTrack?.audioSrc, currentTrack?.duration]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     soundRef.current?.volume(musicVolume);
@@ -119,8 +130,8 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
 
   useEffect(() => {
     setElapsedSeconds(0);
-    setTrackLengthSeconds(currentTrack.duration ?? 0);
-  }, [currentTrackIndex, currentTrack.duration]);
+    setTrackLengthSeconds(currentTrack?.duration ?? 0);
+  }, [activeTrackIndex, currentTrack?.duration]);
 
   useEffect(() => {
     const updateSeek = () => {
@@ -138,7 +149,7 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
 
     const intervalId = window.setInterval(updateSeek, 200);
     return () => window.clearInterval(intervalId);
-  }, [isPlaying, currentTrackIndex]);
+  }, [isPlaying, activeTrackIndex]);
 
   useEffect(() => {
     const updateViewportScale = () => {
@@ -169,14 +180,17 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
   };
 
   const handleNext = () => {
+    if (tracks.length === 0) return;
     setCurrentTrackIndex((prev) => (prev + 1) % tracks.length);
   };
 
   const handlePrevious = () => {
+    if (tracks.length === 0) return;
     setCurrentTrackIndex((prev) => (prev - 1 + tracks.length) % tracks.length);
   };
 
   const handleTrackSelect = (index: number) => {
+    if (index < 0 || index >= tracks.length) return;
     setCurrentTrackIndex(index);
     setIsPlaying(true);
     setShowQueue(false);
@@ -194,6 +208,10 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
   const handlePressStart = (control: string) => setPressedControl(control);
   const handlePressEnd = () => setPressedControl(null);
   const playerScale = BASE_PLAYER_SCALE * viewportScale * 0.5;
+
+  if (!currentTrack) {
+    return null;
+  }
 
   return (
     <motion.div
@@ -340,7 +358,7 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
           {showQueue && (
             <QueueDropdown
               tracks={tracks}
-              currentTrackIndex={currentTrackIndex}
+              currentTrackIndex={activeTrackIndex}
               onTrackSelect={handleTrackSelect}
               className="left-auto right-0 top-[calc(100%-1px)] mt-0 w-[460px]"
             />

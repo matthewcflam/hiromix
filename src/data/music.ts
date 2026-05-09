@@ -73,4 +73,27 @@ export const musicTracks: MusicTrack[] = [
     audioSrc: "/music/starryeyes.mp3",
     duration: 206,
   },
+  {
+    id: "9",
+    title: "Every Breath You Take",
+    artist: "The Police",
+    album: "Synchronicity",
+    albumArt: "/covers/Synchronicity.jpg",
+    audioSrc: "/music/everybreathyoutake.mp3",
+    duration: 253,
+  },
 ];
+
+export const getShuffledMusicTracks = (): MusicTrack[] => {
+  const shuffledTracks = [...musicTracks];
+
+  for (let index = shuffledTracks.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffledTracks[index], shuffledTracks[swapIndex]] = [
+      shuffledTracks[swapIndex],
+      shuffledTracks[index],
+    ];
+  }
+
+  return shuffledTracks;
+};

@@ -175,6 +175,8 @@ export default function StickyNote({
       return 'linear-gradient(135deg, #fff5cc 0%, #ffecb3 50%, #ffe299 100%)';
     } else if (colorHex === '#BBF7D0' || colorHex.toLowerCase() === 'green') {
       return 'linear-gradient(135deg, #d5f4d5 0%, #c1ecc1 50%, #ade4ad 100%)';
+    } else if (colorHex === '#FBCFE8' || colorHex.toLowerCase() === 'pink') {
+      return 'linear-gradient(135deg, #ffe1e9 0%, #FFC5D3 50%, #ffb7c9 100%)';
     }
     return colorHex;
   };
@@ -252,7 +254,7 @@ export default function StickyNote({
             }}
           >
             {/* Paper texture overlay */}
-            {(color === '#FEF08A' || color.toLowerCase() === 'yellow') && (
+            {(color === '#FEF08A' || color.toLowerCase() === 'yellow' || color.toLowerCase() === 'pink') && (
               <div
                 className="absolute inset-0"
                 style={{

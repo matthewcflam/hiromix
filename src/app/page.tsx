@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import HeroHeader from "@/components/HeroHeader";
 import LoadingScreen from "@/components/LoadingScreen";
 import { timelineData } from "@/data/timeline";
-import { musicTracks } from "@/data/music";
+import { getShuffledMusicTracks } from "@/data/music";
 import { loadingScreenConfig } from "@/lib/loadingScreenConfig";
+import type { MusicTrack } from "@/types";
 
 // Dynamically import heavy components
 const TimelineCarousel = dynamic(() => import("@/components/TimelineCarousel"), {
@@ -21,6 +22,11 @@ const MusicPlayer = dynamic(() => import("@/components/MusicPlayer"), {
 
 export default function Home() {
   const [showLoader, setShowLoader] = useState(true);
+  const [playlistTracks, setPlaylistTracks] = useState<MusicTrack[] | null>(null);
+
+  useEffect(() => {
+    setPlaylistTracks(getShuffledMusicTracks());
+  }, []);
 
   const handleLoaderComplete = useCallback(() => {
     setShowLoader(false);
@@ -40,7 +46,7 @@ export default function Home() {
       >
         <HeroHeader />
         <TimelineCarousel items={timelineData} />
-        <MusicPlayer tracks={musicTracks} />
+        {playlistTracks && <MusicPlayer tracks={playlistTracks} />}
       </div>
 
       {isLoaderActive && (

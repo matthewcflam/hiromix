@@ -211,7 +211,6 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const {
     unlockAudio,
     playTick,
-    playPaperPickup,
     playPaperPlace,
     playPaperCrumple,
     playPaperFall,
@@ -956,7 +955,6 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         activeColor={placementColor}
         isDeleteMode={isDeleteMode}
         onToggleDeleteMode={handleToggleDeleteMode}
-        onPaperPickupSound={playPaperPickup}
         onPaperCrumpleSound={playPaperCrumple}
       />
 
