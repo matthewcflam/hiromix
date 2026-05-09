@@ -4,6 +4,7 @@ export interface TimelineItem {
   type: "image" | "video" | "project";
   src: string;
   width: "portrait" | "square" | "landscape";
+  scale?: number; // Scale percentage (100 = 100%, 80 = 80%, etc.)
   category?: string;
   description?: string;
   videoSrc?: string; // For video type

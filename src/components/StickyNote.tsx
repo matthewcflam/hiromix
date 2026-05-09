@@ -39,6 +39,7 @@ export default function StickyNote({
   const [position, setPosition] = useState({ x: initialX, y: initialY });
   const [zIndex, setZIndex] = useState(50);
   const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
+  const latestTextRef = useRef(initialText);
   
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const positionOnDragStartRef = useRef<{ x: number; y: number }>({ x: initialX, y: initialY });
@@ -54,10 +55,17 @@ export default function StickyNote({
     setPosition({ x: initialX, y: initialY });
   }, [initialX, initialY]);
 
-  // Keep text in sync with external realtime updates.
+  // Keep external text updates from clobbering active typing.
   useEffect(() => {
-    setText(initialText);
-  }, [initialText]);
+    if (isFocused) {
+      return;
+    }
+
+    if (initialText !== latestTextRef.current) {
+      latestTextRef.current = initialText;
+      setText(initialText);
+    }
+  }, [initialText, isFocused]);
 
   // Boundary check to keep note within canvas bounds (memoized to prevent dependency issues)
   const constrainPosition = useMemo(() => {
@@ -183,6 +191,7 @@ export default function StickyNote({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
+    latestTextRef.current = newText;
     setText(newText);
     onTextChange(id, newText);
   };

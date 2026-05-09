@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  compress: true,
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {
@@ -17,7 +19,7 @@ const nextConfig = {
     minimumCacheTTL: 60 * 24 * 365, // 1 year for static images
   },
   experimental: {
-    optimizePackageImports: ['framer-motion'],
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
   },
   // Enable SWC minification and optimization
   swcMinify: true,

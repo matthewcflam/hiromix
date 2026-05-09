@@ -27,6 +27,13 @@ type Note = StickyNoteRecord;
 
 type NotesSyncStatus = "connecting" | "live" | "local-fallback" | "sync-error";
 
+interface RenderWindow {
+  startIndex: number;
+  endIndex: number;
+  startX: number;
+  endX: number;
+}
+
 const STICKY_NOTES_LOCAL_STORAGE_KEY = "timeline-notes";
 const STICKY_NOTE_TEXT_DEBOUNCE_MS = 400;
 
@@ -47,6 +54,10 @@ const IMAGE_SIZES = {
   landscape: { width: 400, height: 300 },
 };
 
+const ITEM_OVERSCAN_COUNT = 4;
+const ITEM_OVERSCAN_PX = 1600;
+const TICK_OVERSCAN_PX = 900;
+
 const FIXED_GAP = 20; // Equal whitespace between all photos
 const TICKS_BETWEEN_PHOTOS = 30; // Fixed number of ticks between each photo
 
@@ -56,6 +67,7 @@ interface TickData {
   x: number; // Use integer X position for both deduplication AND rendering
   isMonthStart: boolean;
   monthLabel?: string;
+  index: number;
 }
 
 // Calculate positions with equal spacing and generate editorial ticks
@@ -76,6 +88,7 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
     y: number; 
     width: number; 
     height: number;
+    index: number;
     item: TimelineItem;
   }> = [];
   
@@ -90,7 +103,12 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
   let currentX = startPadding;
   
   sortedItems.forEach((item, index) => {
-    const size = IMAGE_SIZES[item.width];
+    const baseSize = IMAGE_SIZES[item.width];
+    const scale = (item.scale ?? 100) / 100;
+    const size = {
+      width: baseSize.width * scale,
+      height: baseSize.height * scale,
+    };
     
     // Center each image vertically
     // Assuming viewport height, we'll use a reasonable center point
@@ -103,6 +121,7 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
       y: y,
       width: size.width,
       height: size.height,
+      index,
       item: item,
     });
     
@@ -113,7 +132,13 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
     
     // Generate ticks between this photo and the next
     if (index < sortedItems.length - 1) {
-      const nextSize = IMAGE_SIZES[sortedItems[index + 1].width];
+      const nextItem = sortedItems[index + 1];
+      const nextBaseSize = IMAGE_SIZES[nextItem.width];
+      const nextScale = (nextItem.scale ?? 100) / 100;
+      const nextSize = {
+        width: nextBaseSize.width * nextScale,
+        height: nextBaseSize.height * nextScale,
+      };
       const startX = currentX + (size.width / 2); // Center of current photo
       const endX = currentX + size.width + FIXED_GAP + (nextSize.width / 2); // Center of next photo
       const tickSpacing = (endX - startX) / TICKS_BETWEEN_PHOTOS;
@@ -166,7 +191,10 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
   });
   
   // Convert map to array
-  const allTicks = Array.from(tickMap.values());
+  const allTicks = Array.from(tickMap.values()).map((tick, index) => ({
+    ...tick,
+    index,
+  }));
   
   // Calculate total width needed
   const lastPos = positions[positions.length - 1];
@@ -191,6 +219,12 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const [failedVideoIds, setFailedVideoIds] = useState<Set<string>>(new Set());
   const [notesSyncStatus, setNotesSyncStatus] = useState<NotesSyncStatus>("connecting");
   const [notesSyncMessage, setNotesSyncMessage] = useState<string | null>(null);
+  const [renderWindow, setRenderWindow] = useState<RenderWindow>({
+    startIndex: 0,
+    endIndex: 0,
+    startX: 0,
+    endX: 0,
+  });
   const lenisRef = useRef<Lenis | null>(null);
   const rafRef = useRef<number | null>(null);
   const [viewportWidth, setViewportWidth] = useState(1200);
@@ -226,6 +260,24 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     () => calculateTimelinePositions(items, viewportWidth),
     [items, viewportWidth]
   );
+
+  const visiblePositions = useMemo(() => {
+    if (positions.length === 0) {
+      return [];
+    }
+
+    const startIndex = Math.max(0, Math.min(renderWindow.startIndex, positions.length - 1));
+    const endIndex = Math.max(startIndex, Math.min(renderWindow.endIndex, positions.length - 1));
+    return positions.slice(startIndex, endIndex + 1);
+  }, [positions, renderWindow.endIndex, renderWindow.startIndex]);
+
+  const visibleTicks = useMemo(() => {
+    if (ticks.length === 0) {
+      return [];
+    }
+
+    return ticks.filter((tick) => tick.x >= renderWindow.startX && tick.x <= renderWindow.endX);
+  }, [renderWindow.endX, renderWindow.startX, ticks]);
 
   // Calculate scale based on viewport height
   useLayoutEffect(() => {
@@ -703,6 +755,54 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     lenisRef.current = lenis;
 
     const getViewportWidth = () => container.clientWidth || window.innerWidth || 800;
+    const updateRenderWindow = (scroll: number) => {
+      if (positions.length === 0 || ticks.length === 0) {
+        return;
+      }
+
+      const viewportWidthNow = getViewportWidth();
+      const startX = Math.max(0, scroll - ITEM_OVERSCAN_PX);
+      const endX = scroll + viewportWidthNow + ITEM_OVERSCAN_PX;
+
+      let firstVisibleIndex = 0;
+      while (
+        firstVisibleIndex < positions.length &&
+        positions[firstVisibleIndex].x + positions[firstVisibleIndex].width < startX
+      ) {
+        firstVisibleIndex += 1;
+      }
+
+      let lastVisibleIndex = firstVisibleIndex;
+      while (
+        lastVisibleIndex < positions.length &&
+        positions[lastVisibleIndex].x <= endX
+      ) {
+        lastVisibleIndex += 1;
+      }
+
+      const nextWindow: RenderWindow = {
+        startIndex: Math.max(0, firstVisibleIndex - ITEM_OVERSCAN_COUNT),
+        endIndex: Math.min(
+          positions.length - 1,
+          Math.max(firstVisibleIndex, lastVisibleIndex - 1) + ITEM_OVERSCAN_COUNT
+        ),
+        startX: Math.max(0, startX - TICK_OVERSCAN_PX),
+        endX: endX + TICK_OVERSCAN_PX,
+      };
+
+      setRenderWindow((prev) => {
+        if (
+          prev.startIndex === nextWindow.startIndex &&
+          prev.endIndex === nextWindow.endIndex &&
+          prev.startX === nextWindow.startX &&
+          prev.endX === nextWindow.endX
+        ) {
+          return prev;
+        }
+
+        return nextWindow;
+      });
+    };
 
     // Align current active tick to viewport center on initialization and resize.
     if (positions.length > 0 && ticks.length > 0) {
@@ -713,6 +813,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
 
       lenis.scrollTo(targetScroll, { immediate: true });
       previousScrollRef.current = targetScroll;
+      updateRenderWindow(targetScroll);
     }
 
     if (!hasShownCenteredStateRef.current) {
@@ -723,6 +824,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     // Track scroll position and update active tick
     lenis.on('scroll', ({ scroll }: { scroll: number }) => {
       const viewportCenter = scroll + (getViewportWidth() / 2);
+      updateRenderWindow(scroll);
       
       // Calculate scroll velocity for sound rate modulation
       const now = Date.now();
@@ -859,15 +961,15 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
 
   // Generate editorial timeline ruler
   const generateRuler = (): ReactElement[] => {
-    if (ticks.length === 0) return [];
+    if (visibleTicks.length === 0) return [];
     
     const renderedTicks: ReactElement[] = [];
     const now = Date.now();
 
-    ticks.forEach((tick, i) => {
-      const isActive = i === activeTickIndex;
-      const wasRecentlyActive = recentTicks.has(i);
-      const timeSinceActive = wasRecentlyActive ? now - (recentTicks.get(i) || 0) : 0;
+    visibleTicks.forEach((tick) => {
+      const isActive = tick.index === activeTickIndex;
+      const wasRecentlyActive = recentTicks.has(tick.index);
+      const timeSinceActive = wasRecentlyActive ? now - (recentTicks.get(tick.index) || 0) : 0;
       
       // Calculate tick properties
       const baseHeight = 16; // All regular ticks
@@ -895,7 +997,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       // All other ticks: tickHeight = baseHeight
 
       // Use X position in key to ensure uniqueness
-      const uniqueKey = `tick-${Math.round(tick.x)}`;
+      const uniqueKey = `tick-${tick.index}`;
 
       renderedTicks.push(
         <div
@@ -1001,7 +1103,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         >
           
           {/* Floating images - equal spacing */}
-          {positions.map((pos, index) => {
+          {visiblePositions.map((pos) => {
             const item = pos.item;
             const hasFailedVideo = failedVideoIds.has(item.id);
 
@@ -1010,8 +1112,8 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 key={item.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="absolute z-30"
+                transition={{ duration: 0.4, delay: Math.min(pos.index * 0.015, 0.25) }}
+                className="absolute z-30 will-change-transform"
                 style={{
                   left: `${pos.x}px`,
                   top: '50%',
@@ -1020,7 +1122,7 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                   height: `${pos.height}px`,
                   pointerEvents: placementColor ? 'none' : 'auto',
                 }}
-                onMouseEnter={() => !placementColor && setHoveredIndex(index)}
+                onMouseEnter={() => !placementColor && setHoveredIndex(pos.index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 {/* Image or Video */}
@@ -1043,21 +1145,18 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                       src={item.src}
                       alt="Content"
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      sizes={`${Math.ceil(pos.width)}px`}
                       className="object-cover"
-                      priority={index === 0}
-                      loading={index <= 2 ? "eager" : "lazy"}
+                      quality={82}
+                      priority={true}
+                      loading="eager"
+                      decoding="async"
                     />
-                    {item.type === "video" && hasFailedVideo && (
-                      <div className="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium tracking-wide text-white">
-                        VIDEO UNAVAILABLE
-                      </div>
-                    )}
                   </>
                 )}
 
                 {/* Hover labels */}
-                {hoveredIndex === index && !placementColor && (
+                {hoveredIndex === pos.index && !placementColor && (
                   <>
                     {/* Date below image */}
                     <motion.div

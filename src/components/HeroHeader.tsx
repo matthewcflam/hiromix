@@ -23,7 +23,7 @@ export default function HeroHeader() {
           }}
         >
           <div className="flex flex-col">
-            <span>For Anne, my love</span>
+            <span>Happy 6 months!!!</span>
             <span></span>
             {/* <span style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)' }}>(BO®S / 2025)</span> */}
           </div>

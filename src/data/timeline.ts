@@ -7,13 +7,15 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/monty.jpg",
     width: "portrait",
+    scale: 110,
   },
   {
     id: "2",
     date: "2025-07-19T00:00:00.000Z",
     type: "image",
     src: "/images/dinnerfortwo.jpg",
-    width: "square"
+    width: "square",
+    scale: 95,
   },
   {
     id: "3",
@@ -21,6 +23,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/elevatorAnne2.jpg",
     width: "portrait",
+    scale: 105,
   },
   {
     id: "4",
@@ -28,6 +31,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/dacutest.jpg",
     width: "portrait",
+    scale: 115,
   },
   {
     id: "5",
@@ -36,6 +40,7 @@ export const timelineData: TimelineItem[] = [
     src: "/images/twoducks.webp",
     videoSrc: "/videos/endofGU.MOV",
     width: "landscape",
+    scale: 110,
   },
   {
     id: "6",
@@ -43,6 +48,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/restart.jpg",
     width: "square",
+    scale: 90,
   },
   {
     id: "7",
@@ -50,6 +56,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/annemovesin.jpg",
     width: "portrait",
+    scale: 100,
   },
   {
     id: "8",
@@ -57,6 +64,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/matthewincar.jpg",
     width: "landscape",
+    scale: 95,
   },
   {
     id: "9",
@@ -64,6 +72,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/flowersforanne.jpg",
     width: "square",
+    scale: 105,
   },
   {
     id: "10",
@@ -71,6 +80,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/toomanyfriends.jpg",
     width: "portrait",
+    scale: 110,
   },
   {
     id: "11",
@@ -79,6 +89,7 @@ export const timelineData: TimelineItem[] = [
     src: "/images/twoducks.webp",
     videoSrc: "/videos/steppingonnuts.MOV",
     width: "portrait",
+    scale: 115,
   },
    {
     id: "12",
@@ -93,6 +104,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/thefirsttiramisu.jpg",
     width: "square",
+    scale: 92,
   },
   {
     id: "14",
@@ -100,6 +112,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/pandaandanne.jpg",
     width: "landscape",
+    scale: 105,
   },
   {
     id: "15",
@@ -108,6 +121,7 @@ export const timelineData: TimelineItem[] = [
     src: "/images/twoducks.webp",
     videoSrc: "/videos/poolAnne.MOV",
     width: "landscape",
+    scale: 112,
   },
   {
     id: "16",
@@ -115,6 +129,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/arichman.jpg",
     width: "square",
+    scale: 98,
   },
   {
     id: "17",
@@ -123,6 +138,7 @@ export const timelineData: TimelineItem[] = [
     src: "/images/anneinthewild.jpg",
     videoSrc: "/videos/anneinthewildvid.mov",
     width: "portrait",
+    scale: 110,
   },
   {
     id: "17b",
@@ -131,6 +147,7 @@ export const timelineData: TimelineItem[] = [
     src: "/images/twoducks.webp",
     videoSrc: "/videos/tsmoggingorwhat.mp4",
     width: "portrait",
+    scale: 105,
   },
   {
     id: "18",
@@ -139,6 +156,7 @@ export const timelineData: TimelineItem[] = [
     src: "/images/twoducks.webp",
     videoSrc: "/videos/bus.MOV",
     width: "landscape",
+    scale: 108,
   },
   {
     id: "19",
@@ -146,6 +164,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/twin4L.jpg",
     width: "portrait",
+    scale: 112,
   },
   {
     id: "20",
@@ -153,6 +172,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/whatthetiramisu.jpg",
     width: "portrait",
+    scale: 95,
   },
   {
     id: "21",
@@ -160,6 +180,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/wetuff.jpg",
     width: "square",
+    scale: 108,
   },
    {
     id: "22",
@@ -174,6 +195,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/24hrs.jpg",
     width: "square",
+    scale: 96,
   },
   {
     id: "24",
@@ -181,6 +203,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/matthewgrumpy.jpg",
     width: "square",
+    scale: 110,
   },
   {
     id: "25",
@@ -188,6 +211,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/hellopeter.jpg",
     width: "square",
+    scale: 93,
   },
   {
     id: "26",
@@ -195,6 +219,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/thrift.jpg",
     width: "landscape",
+    scale: 100,
   },
    {
     id: "27",
@@ -210,6 +235,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/whatdis.jpg",
     width: "square",
+    scale: 102,
   },
   {
     id: "29",
@@ -217,6 +243,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/caterpillar.jpg",
     width: "portrait",
+    scale: 108,
   },
   // {
   //   id: "30",
@@ -231,6 +258,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/tongue2.jpg",
     width: "portrait",
+    scale: 97,
   },
   {
     id: "32",
@@ -238,6 +266,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/outside.jpg",
     width: "square",
+    scale: 107,
   },
   {
     id: "33",
@@ -245,6 +274,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/outside2.jpg",
     width: "square",
+    scale: 94,
   },
   {
     id: "34",
@@ -252,6 +282,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/yum.jpg",
     width: "square",
+    scale: 111,
   },
   {
     id: "35",
@@ -259,6 +290,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/eatback.jpg",
     width: "square",
+    scale: 99,
   },
   {
     id: "36",
@@ -266,6 +298,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/twinnem.jpg",
     width: "square",
+    scale: 104,
   },
   {
     id: "37",
@@ -273,6 +306,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/oyster.jpg",
     width: "square",
+    scale: 91,
   },
   {
     id: "38",
@@ -280,6 +314,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/godurcute.jpg",
     width: "portrait",
+    scale: 109,
   },
   {
     id: "39",
@@ -287,6 +322,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/goodboy.jpg",
     width: "portrait",
+    scale: 106,
   },
   {
     id: "40",
@@ -294,6 +330,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/locked.jpg",
     width: "landscape",
+    scale: 103,
   },
   {
     id: "41",
@@ -302,6 +339,7 @@ export const timelineData: TimelineItem[] = [
     src: "/images/twoducks.webp",
     videoSrc: "/videos/snow.mp4",
     width: "landscape",
+    scale: 114,
   },
   {
     id: "42",
@@ -309,6 +347,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/legs.jpg",
     width: "square",
+    scale: 97,
   },
   {
     id: "43",
@@ -316,6 +355,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/dressing.jpg",
     width: "portrait",
+    scale: 111,
   },
   {
     id: "44",
@@ -323,6 +363,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/cherryblossoms.jpg",
     width: "portrait",
+    scale: 98,
   },
   {
     id: "45",
@@ -330,6 +371,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/eyecontact.jpg",
     width: "portrait",
+    scale: 104,
   },
   {
     id: "46",
@@ -337,6 +379,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/beach1.jpg",
     width: "portrait",
+    scale: 102,
   },
   {
     id: "47",
@@ -344,6 +387,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/bluebench.jpg",
     width: "portrait",
+    scale: 109,
   },
   {
     id: "48",
@@ -351,6 +395,7 @@ export const timelineData: TimelineItem[] = [
     type: "image",
     src: "/images/tongues.jpg",
     width: "landscape",
+    scale: 101,
   },
 ];
  
