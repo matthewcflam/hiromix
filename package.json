@@ -11,17 +11,14 @@
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
-    "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.18.0",
-    "@supabase/supabase-js": "^2.57.4",
     "@studio-freight/lenis": "^1.0.42",
-    "@types/three": "^0.183.1",
+    "@supabase/supabase-js": "^2.57.4",
+    "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "howler": "^2.2.4",
     "lucide-react": "^1.14.0",
-    "motion": "^12.38.0",
     "next": "^14.2.0",
     "radix-ui": "^1.4.3",
     "react": "^18.3.0",
@@ -30,7 +27,6 @@
     "react-peel": "^2.1.0",
     "shadcn": "^4.6.0",
     "tailwind-merge": "^3.5.0",
-    "three": "^0.183.2",
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
@@ -42,6 +38,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.0",
     "postcss": "^8.4.38",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5"
   }

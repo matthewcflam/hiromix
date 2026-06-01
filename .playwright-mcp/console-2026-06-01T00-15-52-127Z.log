@@ -1,0 +1,309 @@
+[     684ms] [INFO] <Suspense> is an experimental feature and its API will likely change. @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:21
+[     740ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Showcase (July)
+  - expected on client: Showcase (June) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     741ms] [ERROR] Hydration completed but contains mismatches. @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:4
+[     742ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Showcase (July)
+  - expected on client: Showcase (June) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     743ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Showcase (July)
+  - expected on client: Showcase (June) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     756ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (November)
+  - expected on client: Educate (October) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     760ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Inspire (August)
+  - expected on client: Inspire (July) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     763ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Inspire (June)
+  - expected on client: Inspire (May) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     764ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Inspire (June)
+  - expected on client: Inspire (May) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     765ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Inspire (June)
+  - expected on client: Inspire (May) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     767ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (May)
+  - expected on client: Educate (April) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     768ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (May)
+  - expected on client: Educate (April) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     769ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (April)
+  - expected on client: Educate (March) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     770ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (April)
+  - expected on client: Educate (March) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     772ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (March)
+  - expected on client: Educate (February) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     773ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (February)
+  - expected on client: Educate (January) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     774ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Educate (February)
+  - expected on client: Educate (January) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     775ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Showcase (January)
+  - expected on client: Showcase (December) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     779ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Showcase (January)
+  - expected on client: Showcase (December) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[     780ms] [WARNING] [Vue warn]: Hydration text content mismatch on JSHandle@node 
+  - rendered on server: Showcase (January)
+  - expected on client: Showcase (December) 
+  at <Index ref="carousel" class="carousel" > 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouteProvider key="/" vnode= {__v_isVNode: true, __v_skip: true, type: Object, props: Object, key: null} route= {fullPath: /, hash: , query: Object, name: index, path: /}  ... > 
+  at <BaseTransition onAfterLeave= [] mode="" onEnter=fn  ... > 
+  at <Transition onAfterLeave= [] css=false name="page"  ... > 
+  at <RouterView name=undefined route=undefined > 
+  at <NuxtPage> 
+  at <Default ref=Ref< undefined > > 
+  at <AsyncComponentWrapper ref=Ref< undefined > > 
+  at <LayoutLoader key="default" layoutProps= {ref: Ew} name="default" > 
+  at <NuxtLayoutProvider layoutProps= {ref: Ew} key="default" name="default"  ... > 
+  at <NuxtLayout> 
+  at <Anonymous key=4 > 
+  at <NuxtRoot> @ https://tlb.betteroff.studio/_nuxt/BGLHITTy.js:3
+[   41038ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ :4

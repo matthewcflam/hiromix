@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import Lenis from "@studio-freight/lenis";
 import type { StickyNoteRecord, TimelineItem } from "@/types";
 import StickyNote from "./StickyNote";
 import NotePalette from "./NotePalette";
@@ -59,7 +57,7 @@ const ITEM_OVERSCAN_PX = 1600;
 const TICK_OVERSCAN_PX = 900;
 
 const FIXED_GAP = 20; // Equal whitespace between all photos
-const TICKS_BETWEEN_PHOTOS = 30; // Fixed number of ticks between each photo
+const TICK_SPACING = 11; // Uniform pixel pitch between ticks (matches tlb.betteroff.studio)
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
@@ -72,10 +70,11 @@ interface TickData {
 
 // Calculate positions with equal spacing and generate editorial ticks
 const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number) => {
-  if (items.length === 0) return { 
-    positions: [], 
+  if (items.length === 0) return {
+    positions: [],
     totalWidth: Math.max(1000, viewportWidth),
     ticks: [],
+    firstMonthTickIndex: 0,
   };
 
   // Sort items by date
@@ -92,8 +91,9 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
     item: TimelineItem;
   }> = [];
   
-  // Use Map to deduplicate ticks by X position (rounded to avoid floating point issues)
-  const tickMap = new Map<number, TickData>();
+  // Collect month-marker positions (photo center x + label) for new-month photos.
+  // Ticks themselves are generated uniformly after totalWidth is known.
+  const monthMarkers: Array<{ centerX: number; label: string }> = [];
   const safeViewportWidth = Math.max(0, viewportWidth);
   const firstSize = IMAGE_SIZES[sortedItems[0].width];
   const lastSize = IMAGE_SIZES[sortedItems[sortedItems.length - 1].width];
@@ -125,93 +125,64 @@ const calculateTimelinePositions = (items: TimelineItem[], viewportWidth: number
       item: item,
     });
     
-    // Check if this is the first photo of a new month
+    // Check if this is the first photo of a new month — record a month marker
     const currentMonth = new Date(item.date).getMonth();
-    const isMonthStart = index === 0 || 
+    const isMonthStart = index === 0 ||
       new Date(sortedItems[index - 1].date).getMonth() !== currentMonth;
-    
-    // Generate ticks between this photo and the next
-    if (index < sortedItems.length - 1) {
-      const nextItem = sortedItems[index + 1];
-      const nextBaseSize = IMAGE_SIZES[nextItem.width];
-      const nextScale = (nextItem.scale ?? 100) / 100;
-      const nextSize = {
-        width: nextBaseSize.width * nextScale,
-        height: nextBaseSize.height * nextScale,
-      };
-      const startX = currentX + (size.width / 2); // Center of current photo
-      const endX = currentX + size.width + FIXED_GAP + (nextSize.width / 2); // Center of next photo
-      const tickSpacing = (endX - startX) / TICKS_BETWEEN_PHOTOS;
-      
-      // Generate fixed number of ticks between photos
-      for (let t = 0; t <= TICKS_BETWEEN_PHOTOS; t++) {
-        const tickX = startX + (t * tickSpacing);
-        const roundedX = Math.round(tickX); // Round to integer pixel
-        const isFirstTick = t === 0;
-        
-        // Only add if not already present, but preserve month label if any tick at this position has it
-        const existing = tickMap.get(roundedX);
-        if (!existing) {
-          tickMap.set(roundedX, {
-            x: roundedX, // CRITICAL: Use rounded value for rendering too, not original float
-            isMonthStart: isFirstTick && isMonthStart,
-            monthLabel: (isFirstTick && isMonthStart) 
-              ? `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`
-              : undefined,
-            index: -1,
-          });
-        } else if (isFirstTick && isMonthStart && !existing.monthLabel) {
-          // Preserve month label if this tick has one but existing doesn't
-          existing.isMonthStart = true;
-          existing.monthLabel = `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`;
-        }
-      }
-    } else {
-      // Last photo - just add one tick at its center
-      const tickX = currentX + (size.width / 2);
-      const roundedX = Math.round(tickX);
-      
-      const existing = tickMap.get(roundedX);
-        if (!existing) {
-          tickMap.set(roundedX, {
-            x: roundedX, // CRITICAL: Use rounded value for rendering too
-            isMonthStart: isMonthStart,
-            monthLabel: isMonthStart 
-              ? `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`
-              : undefined,
-            index: -1,
-          });
-      } else if (isMonthStart && !existing.monthLabel) {
-        // Preserve month label if this tick has one but existing doesn't
-        existing.isMonthStart = true;
-        existing.monthLabel = `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`;
-      }
+    if (isMonthStart) {
+      monthMarkers.push({
+        centerX: currentX + size.width / 2,
+        label: `${MONTHS[currentMonth]} ${new Date(item.date).getFullYear()}`,
+      });
     }
-    
+
     // Update position for next item
     currentX += size.width + FIXED_GAP;
   });
-  
-  // Convert map to array
-  const allTicks = Array.from(tickMap.values()).map((tick, index) => ({
-    ...tick,
-    index,
-  }));
-  
+
   // Calculate total width needed
   const lastPos = positions[positions.length - 1];
   const totalWidth = lastPos.x + lastPos.width + endPadding;
-  
-  return { positions, totalWidth, ticks: allTicks };
+
+  // Generate uniform ticks at a fixed pixel pitch — only across the content span
+  // (first photo center → last photo center). No ticks in the leading/trailing padding.
+  const firstCenter = positions[0].x + positions[0].width / 2;
+  const lastCenter = lastPos.x + lastPos.width / 2;
+  const allTicks: TickData[] = [];
+  for (let x = firstCenter, index = 0; x <= lastCenter; x += TICK_SPACING, index++) {
+    allTicks.push({
+      x: Math.round(x),
+      isMonthStart: false,
+      monthLabel: undefined,
+      index,
+    });
+  }
+
+  // Snap each month marker to its nearest uniform tick (indices are relative to firstCenter)
+  let firstMonthTickIndex = 0;
+  monthMarkers.forEach((marker, markerIdx) => {
+    const tickIndex = Math.min(
+      allTicks.length - 1,
+      Math.max(0, Math.round((marker.centerX - firstCenter) / TICK_SPACING))
+    );
+    const tick = allTicks[tickIndex];
+    if (tick && !tick.monthLabel) {
+      tick.isMonthStart = true;
+      tick.monthLabel = marker.label;
+      if (markerIdx === 0) firstMonthTickIndex = tickIndex;
+    }
+  });
+
+  return { positions, totalWidth, ticks: allTicks, firstMonthTickIndex };
 };
 
 export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [activeTickIndex, setActiveTickIndex] = useState(0);
   const activeTickIndexRef = useRef(0);
-  const [recentTicks, setRecentTicks] = useState<Map<number, number>>(new Map()); // Map<tickIndex, timestamp>
+  const activeTickSinceRef = useRef(0); // Timestamp when the active tick last changed (for grow-in animation)
+  const recentTicksRef = useRef<Map<number, { ts: number; vel: number }>>(new Map()); // Map<tickIndex, { passed-at timestamp, scroll velocity at pass time }>
   const previousScrollRef = useRef(0);
   const previousTickRef = useRef(0); // Track previous tick for interpolation
   const [notes, setNotes] = useState<Note[]>([]);
@@ -227,7 +198,11 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     startX: 0,
     endX: 0,
   });
-  const lenisRef = useRef<Lenis | null>(null);
+  const scrollStateRef = useRef({ current: 0, target: 0 });
+  const rulerCanvasRef = useRef<HTMLCanvasElement>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const dragStartScrollRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const [viewportWidth, setViewportWidth] = useState(1200);
   const [viewportHeight, setViewportHeight] = useState(900);
@@ -253,12 +228,18 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
   } = soundManager;
   const scrollVelocityRef = useRef(0);
   const lastScrollTimeRef = useRef(Date.now());
+
+  // Cached viewport width — avoids reading container.clientWidth (forced layout) every RAF frame
+  const viewportWidthRef = useRef(viewportWidth);
+  // Single-active-video playback: only the centered video decodes; the rest show their poster
+  const videoElsRef = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const activeVideoIdRef = useRef<string | null>(null);
   
   // Set to false to disable debug logging
   const DEBUG_PERSISTENCE = false;
 
   // Calculate positions and ticks
-  const { positions, totalWidth, ticks } = useMemo(
+  const { positions, totalWidth, ticks, firstMonthTickIndex } = useMemo(
     () => calculateTimelinePositions(items, viewportWidth),
     [items, viewportWidth]
   );
@@ -273,19 +254,24 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     return positions.slice(startIndex, endIndex + 1);
   }, [positions, renderWindow.endIndex, renderWindow.startIndex]);
 
-  const visibleTicks = useMemo(() => {
-    if (ticks.length === 0) {
-      return [];
-    }
-
-    return ticks.filter((tick) => tick.x >= renderWindow.startX && tick.x <= renderWindow.endX);
-  }, [renderWindow.endX, renderWindow.startX, ticks]);
+  // Only mount sticky notes whose x falls within the current render window (plus a
+  // buffer for note width). Keeps note count off the main thread regardless of how
+  // many are placed across the timeline. A note being edited is, by definition, on
+  // screen, so it stays within this range and won't lose focus.
+  const NOTE_VIRTUALIZE_BUFFER = 240;
+  const visibleNotes = useMemo(() => {
+    if (notes.length === 0) return notes;
+    const minX = renderWindow.startX - NOTE_VIRTUALIZE_BUFFER;
+    const maxX = renderWindow.endX + NOTE_VIRTUALIZE_BUFFER;
+    return notes.filter((note) => note.x >= minX && note.x <= maxX);
+  }, [notes, renderWindow.startX, renderWindow.endX]);
 
   // Calculate scale based on viewport height
   useLayoutEffect(() => {
     const updateScale = () => {
       const vw = scrollContainerRef.current?.clientWidth ?? window.innerWidth;
       const vh = window.innerHeight;
+      viewportWidthRef.current = vw;
       setViewportWidth(vw);
       setViewportHeight(vh);
     };
@@ -708,7 +694,31 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
     });
   };
 
-  // Initialize Lenis smooth scrolling
+  // Play only the centered video; pause everything else so at most one video decodes
+  // at a time. Driven imperatively from the RAF loop to avoid re-renders.
+  const activateVideo = (id: string | null) => {
+    if (activeVideoIdRef.current === id) return;
+    const prevId = activeVideoIdRef.current;
+    activeVideoIdRef.current = id;
+
+    if (prevId) {
+      const prevEl = videoElsRef.current.get(prevId);
+      if (prevEl) {
+        try { prevEl.pause(); } catch { /* ignore */ }
+      }
+    }
+    if (id) {
+      const el = videoElsRef.current.get(id);
+      if (el) {
+        const playback = el.play();
+        if (playback && typeof playback.catch === "function") {
+          playback.catch(() => { /* autoplay/decoding rejection is non-fatal */ });
+        }
+      }
+    }
+  };
+
+  // Scroll system: fixed container + single translateX track + canvas ruler
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -718,50 +728,37 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       unlockAudio();
     };
 
-    // Scroll gestures must unlock and audibly prime ticker sound immediately.
     const handleScrollGestureAudio = () => {
       markAudioInteraction();
       if (!hasPlayedInitialScrollTickRef.current) {
         const played = playTick(0.15);
-        if (played) {
-          hasPlayedInitialScrollTickRef.current = true;
-        }
+        if (played) hasPlayedInitialScrollTickRef.current = true;
       }
     };
 
-    container.addEventListener('wheel', handleScrollGestureAudio, { passive: true });
-    container.addEventListener('touchmove', handleScrollGestureAudio, { passive: true });
-    window.addEventListener('wheel', handleScrollGestureAudio, { passive: true });
-    window.addEventListener('touchmove', handleScrollGestureAudio, { passive: true });
     window.addEventListener('touchstart', markAudioInteraction, { passive: true });
     window.addEventListener('pointerdown', markAudioInteraction, { passive: true });
     window.addEventListener('mousedown', markAudioInteraction, { passive: true });
-    container.addEventListener('touchstart', markAudioInteraction, { passive: true });
-    container.addEventListener('pointerdown', markAudioInteraction, { passive: true });
-    window.addEventListener('keydown', markAudioInteraction);
 
-    // Create Lenis instance for horizontal scrolling
-    const lenis = new Lenis({
-      wrapper: container,
-      content: container.firstElementChild as HTMLElement,
-      orientation: 'horizontal',
-      gestureOrientation: 'both',
-      smoothWheel: true,
-      wheelMultiplier: 1.2,
-      touchMultiplier: 1.8,
-      infinite: false,
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    });
+    // Canvas ruler: initialize at device pixel ratio for crisp rendering
+    const initRulerCanvas = () => {
+      const canvas = rulerCanvasRef.current;
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = 96 * dpr;
+    };
+    initRulerCanvas();
+    window.addEventListener('resize', initRulerCanvas);
 
-    lenisRef.current = lenis;
+    // Measure once when this effect (re)runs; thereafter read the cached ref so the
+    // RAF loop never triggers a forced synchronous layout via clientWidth.
+    viewportWidthRef.current = container.clientWidth || window.innerWidth || 800;
+    const getViewportWidth = () => viewportWidthRef.current || window.innerWidth || 800;
+    const getMaxScroll = () => Math.max(0, totalWidth - getViewportWidth());
 
-    const getViewportWidth = () => container.clientWidth || window.innerWidth || 800;
     const updateRenderWindow = (scroll: number) => {
-      if (positions.length === 0 || ticks.length === 0) {
-        return;
-      }
-
+      if (positions.length === 0 || ticks.length === 0) return;
       const viewportWidthNow = getViewportWidth();
       const startX = Math.max(0, scroll - ITEM_OVERSCAN_PX);
       const endX = scroll + viewportWidthNow + ITEM_OVERSCAN_PX;
@@ -770,17 +767,13 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       while (
         firstVisibleIndex < positions.length &&
         positions[firstVisibleIndex].x + positions[firstVisibleIndex].width < startX
-      ) {
-        firstVisibleIndex += 1;
-      }
+      ) firstVisibleIndex++;
 
       let lastVisibleIndex = firstVisibleIndex;
       while (
         lastVisibleIndex < positions.length &&
         positions[lastVisibleIndex].x <= endX
-      ) {
-        lastVisibleIndex += 1;
-      }
+      ) lastVisibleIndex++;
 
       const nextWindow: RenderWindow = {
         startIndex: Math.max(0, firstVisibleIndex - ITEM_OVERSCAN_COUNT),
@@ -798,24 +791,124 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
           prev.endIndex === nextWindow.endIndex &&
           prev.startX === nextWindow.startX &&
           prev.endX === nextWindow.endX
-        ) {
-          return prev;
-        }
-
+        ) return prev;
         return nextWindow;
       });
     };
 
-    // Align current active tick to viewport center on initialization and resize.
+    // Draw ruler ticks directly on canvas — zero React/DOM overhead.
+    // Geometry/colors mirror tlb.betteroff.studio: 1px ticks, fixed baseline,
+    // 12px @ rgba(0,0,0,0.25) resting, 22px month markers, 50px solid-black active.
+    const TICK_BASE = 60; // px from canvas top — active 50px tick grows up to y=10
+    const drawRuler = (scrollX: number) => {
+      const canvas = rulerCanvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.width / dpr;
+      const now = Date.now();
+      const activeIdx = activeTickIndexRef.current;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      // Only iterate the on-screen tick slice. Ticks are sorted by x, so binary-search
+      // the first visible tick; this keeps per-frame work O(visible) no matter how long
+      // the timeline grows.
+      const minX = scrollX - 4;
+      const maxX = scrollX + W + 4;
+      let visLo = 0;
+      let visHi = ticks.length - 1;
+      while (visLo < visHi) {
+        const mid = (visLo + visHi) >> 1;
+        if (ticks[mid].x < minX) visLo = mid + 1;
+        else visHi = mid;
+      }
+
+      for (let ti = visLo; ti < ticks.length; ti++) {
+        const tick = ticks[ti];
+        if (tick.x > maxX) break;
+        const sx = tick.x - scrollX;
+
+        const isActive = tick.index === activeIdx;
+        const recentTs = recentTicksRef.current.get(tick.index);
+
+        // Velocity- and distance-dependent decay window for the trail: faster
+        // scrolling shortens the whole trail, and amplifies how much each tick of
+        // distance from the active ticker shaves off — so on a fast flick the far
+        // end of the trail collapses to rest almost immediately while the ticks
+        // right behind the cursor still linger. At rest (vel 0) it stays ~600ms.
+        const decayMs = recentTs
+          ? Math.max(120, 600 - recentTs.vel * 200 - Math.abs(tick.index - activeIdx) * recentTs.vel * 30)
+          : 600;
+
+        let height = 12;
+        let color = 'rgba(0,0,0,0.25)';
+
+        if (isActive) {
+          // Grow quickly to full height each time a new tick becomes active,
+          // rather than snapping straight to 50. Ease-out over a short window.
+          const ACTIVE_GROW_MS = 180;
+          const restHeight = tick.isMonthStart ? 22 : 12;
+          const age = now - activeTickSinceRef.current;
+          const t = Math.min(1, age / ACTIVE_GROW_MS);
+          const eased = 1 - Math.pow(1 - t, 4); // ease-out-quart
+          height = restHeight + (50 - restHeight) * eased;
+          const alpha = 0.25 + (1 - 0.25) * eased;
+          color = `rgba(0,0,0,${alpha.toFixed(3)})`;
+        } else if (recentTs !== undefined && now - recentTs.ts < decayMs) {
+          // Wave decay: recently-passed ticks swell then settle back to their
+          // own rest height — month markers floor at 22 (never dip to 12 and regrow).
+          const age = now - recentTs.ts;
+          const t = 1 - Math.pow(1 - age / decayMs, 2); // ease-in-quad falloff
+          const restHeight = tick.isMonthStart ? 22 : 12;
+          const peakHeight = Math.max(30, restHeight);
+          height = restHeight + (peakHeight - restHeight) * (1 - t);
+          const alpha = 0.25 + (0.55 - 0.25) * (1 - t);
+          color = `rgba(0,0,0,${alpha.toFixed(3)})`;
+        } else if (tick.isMonthStart) {
+          height = 22;
+          color = 'rgba(0,0,0,0.25)';
+        }
+
+        ctx.fillStyle = color;
+        ctx.fillRect(Math.round(sx), TICK_BASE - height, 1, height);
+
+        if (tick.monthLabel) {
+          ctx.fillStyle = 'rgba(0,0,0,0.85)';
+          ctx.font = '500 13px ui-monospace, SFMono-Regular, "Cascadia Code", Menlo, Consolas, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(tick.monthLabel.toUpperCase(), sx, TICK_BASE + 18);
+        }
+      }
+
+      ctx.restore();
+    };
+
+    // Set initial scroll position
     if (positions.length > 0 && ticks.length > 0) {
       const viewportHalf = getViewportWidth() / 2;
-      const clampedActiveTick = Math.min(activeTickIndexRef.current, ticks.length - 1);
-      const activeTick = ticks[clampedActiveTick];
-      const targetScroll = Math.max(0, activeTick.x - viewportHalf);
-
-      lenis.scrollTo(targetScroll, { immediate: true });
-      previousScrollRef.current = targetScroll;
-      updateRenderWindow(targetScroll);
+      // On first load, center on the first month; afterwards preserve the active tick.
+      const targetTickIndex = hasShownCenteredStateRef.current
+        ? Math.min(activeTickIndexRef.current, ticks.length - 1)
+        : Math.min(firstMonthTickIndex, ticks.length - 1);
+      if (!hasShownCenteredStateRef.current) {
+        activeTickIndexRef.current = targetTickIndex;
+        previousTickRef.current = targetTickIndex;
+      }
+      const activeTick = ticks[targetTickIndex];
+      const initialScroll = Math.max(0, activeTick.x - viewportHalf);
+      scrollStateRef.current.current = initialScroll;
+      scrollStateRef.current.target = initialScroll;
+      previousScrollRef.current = initialScroll;
+      updateRenderWindow(initialScroll);
+      if (canvasRef.current) {
+        canvasRef.current.style.transform = `translateX(-${initialScroll}px)`;
+      }
+      drawRuler(initialScroll);
     }
 
     if (!hasShownCenteredStateRef.current) {
@@ -823,217 +916,190 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
       setIsTimelineVisible(true);
     }
 
-    // Track scroll position and update active tick
-    lenis.on('scroll', ({ scroll }: { scroll: number }) => {
-      const viewportCenter = scroll + (getViewportWidth() / 2);
-      updateRenderWindow(scroll);
-      
-      // Calculate scroll velocity for sound rate modulation
+    // Wheel: accumulate target, let lerp smooth it
+    const WHEEL_MULTIPLIER = 2.0;
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      handleScrollGestureAudio();
+      const delta = e.deltaMode === 1
+        ? (e.deltaY || e.deltaX) * 40
+        : (e.deltaY || e.deltaX);
+      const state = scrollStateRef.current;
+      state.target = Math.max(0, Math.min(getMaxScroll(), state.target + delta * WHEEL_MULTIPLIER));
+    };
+
+    // Pointer drag for mouse/touch drag-to-scroll
+    const DRAG_MULTIPLIER = 1.5;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      isDraggingRef.current = true;
+      dragStartXRef.current = e.clientX;
+      dragStartScrollRef.current = scrollStateRef.current.target;
+      container.setPointerCapture(e.pointerId);
+      handleScrollGestureAudio();
+    };
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isDraggingRef.current) return;
+      const dx = dragStartXRef.current - e.clientX;
+      scrollStateRef.current.target = Math.max(
+        0,
+        Math.min(getMaxScroll(), dragStartScrollRef.current + dx * DRAG_MULTIPLIER)
+      );
+    };
+    const handlePointerUp = () => { isDraggingRef.current = false; };
+
+    // Keyboard arrow scroll
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const step = 300;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        scrollStateRef.current.target = Math.min(getMaxScroll(), scrollStateRef.current.target + step);
+        markAudioInteraction();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        scrollStateRef.current.target = Math.max(0, scrollStateRef.current.target - step);
+        markAudioInteraction();
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('pointerdown', handlePointerDown);
+    container.addEventListener('pointermove', handlePointerMove);
+    container.addEventListener('pointerup', handlePointerUp);
+    container.addEventListener('pointercancel', handlePointerUp);
+    window.addEventListener('keydown', handleKeyDown);
+
+    // RAF loop: lerp scroll → apply transform → draw canvas → tick sounds
+    const LERP_FACTOR = 0.10;
+
+    function raf() {
+      const state = scrollStateRef.current;
+      const dx = state.target - state.current;
+      if (Math.abs(dx) > 0.01) {
+        state.current += dx * LERP_FACTOR;
+      } else {
+        state.current = state.target;
+      }
+      const scrollX = state.current;
+
+      // Single transform on the track — compositor only, no layout
+      if (canvasRef.current) {
+        canvasRef.current.style.transform = `translateX(-${scrollX}px)`;
+      }
+
+      // Draw ruler canvas
+      drawRuler(scrollX);
+
+      // Velocity for tick sounds
       const now = Date.now();
       const timeDelta = Math.max(1, now - lastScrollTimeRef.current);
-      const scrollDelta = Math.abs(scroll - previousScrollRef.current);
-      const rawVelocity = scrollDelta / timeDelta; // pixels per millisecond
-      
-      // Normalize velocity to 0-1 range (map 0-5 px/ms to 0-1)
-      const normalizedVelocity = Math.min(1, rawVelocity / 5);
+      const scrollDelta = Math.abs(scrollX - previousScrollRef.current);
+      const normalizedVelocity = Math.min(1, (scrollDelta / timeDelta) / 5);
       scrollVelocityRef.current = normalizedVelocity;
 
       let playedTickThisFrame = false;
-
-      // Ensure the very first meaningful scroll movement produces an audible tick.
       if (hasUserInteractedForAudioRef.current && normalizedVelocity > 0.05 && !hasPlayedInitialScrollTickRef.current) {
         unlockAudio();
         const played = playTick(normalizedVelocity);
-        if (played) {
-          hasPlayedInitialScrollTickRef.current = true;
-          playedTickThisFrame = true;
-        }
+        if (played) { hasPlayedInitialScrollTickRef.current = true; playedTickThisFrame = true; }
       } else if (normalizedVelocity < 0.01) {
         hasPlayedInitialScrollTickRef.current = false;
       }
-      
-      previousScrollRef.current = scroll;
+
+      previousScrollRef.current = scrollX;
       lastScrollTimeRef.current = now;
-      
-      // Find which tick is closest to viewport center
-      let closestTickIndex = 0;
-      let minDistance = Infinity;
-      
-      ticks.forEach((tick, index) => {
-        const tickX = tick.x;
-        const distance = Math.abs(tickX - viewportCenter);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestTickIndex = index;
+
+      // Virtualization: update render window (guarded by equality check inside)
+      updateRenderWindow(scrollX);
+
+      // Binary search for active tick
+      if (ticks.length > 0) {
+        const viewportCenter = scrollX + getViewportWidth() / 2;
+        let lo = 0, hi = ticks.length - 1;
+        while (lo < hi) {
+          const mid = (lo + hi) >> 1;
+          if (ticks[mid].x < viewportCenter) lo = mid + 1;
+          else hi = mid;
         }
-      });
-      
-      const centerTickIndex = closestTickIndex;
-      
-      // When active tick changes, add ALL ticks between previous and current to recent history
-      if (centerTickIndex !== activeTickIndexRef.current) {
-        const previousTick = previousTickRef.current;
-        const currentTick = centerTickIndex;
-        
-        // Play tick sound with velocity-based rate
-        // Only play if there's meaningful scroll velocity
-        if (normalizedVelocity > 0.05 && !playedTickThisFrame) {
-          unlockAudio();
-          playTick(normalizedVelocity);
-        }
-        
-        setRecentTicks(prev => {
-          const newMap = new Map(prev);
-          const now = Date.now();
-          
-          // Determine direction and range
+        const centerTickIndex =
+          lo > 0 && Math.abs(ticks[lo - 1].x - viewportCenter) < Math.abs(ticks[lo].x - viewportCenter)
+            ? lo - 1 : lo;
+
+        if (centerTickIndex !== activeTickIndexRef.current) {
+          const previousTick = previousTickRef.current;
+          const currentTick = centerTickIndex;
+
+          if (normalizedVelocity > 0.05 && !playedTickThisFrame) {
+            unlockAudio();
+            playTick(normalizedVelocity);
+          }
+
+          const tickNow = Date.now();
           const start = Math.min(previousTick, currentTick);
           const end = Math.max(previousTick, currentTick);
-          
-          // Add ALL ticks that were passed over (including the previous active tick)
-          // This creates the wave effect by triggering all intermediate ticks
           for (let i = start; i <= end; i++) {
-            if (i !== currentTick) { // Don't add the current tick yet
-              // Stagger the timestamps slightly based on distance from current
-              // This creates a more natural wave propagation
-              const distanceFromCurrent = Math.abs(i - currentTick);
-              const staggerDelay = distanceFromCurrent * 2; // 2ms per tick distance
-              newMap.set(i, now - staggerDelay);
+            if (i !== currentTick) {
+              // Record when this tick was passed AND how fast we were moving, so the
+              // draw loop can collapse the trail faster on fast scrolls.
+              recentTicksRef.current.set(i, {
+                ts: tickNow - Math.abs(i - currentTick) * 2,
+                vel: normalizedVelocity,
+              });
             }
           }
-          
-          return newMap;
-        });
-        
-        previousTickRef.current = centerTickIndex;
-        activeTickIndexRef.current = centerTickIndex;
-        setActiveTickIndex(centerTickIndex);
-      }
-    });
 
-    // Animation loop
-    function raf(time: number) {
-      lenis.raf(time);
+          previousTickRef.current = centerTickIndex;
+          activeTickIndexRef.current = centerTickIndex;
+          activeTickSinceRef.current = tickNow;
+        }
+
+        // Prune stale recentTicks entries
+        if (recentTicksRef.current.size > 100) {
+          const cutoff = Date.now() - 700;
+          for (const [idx, entry] of recentTicksRef.current) {
+            if (entry.ts < cutoff) recentTicksRef.current.delete(idx);
+          }
+        }
+      }
+
+      // Single-active-video: find the item nearest the viewport center and, if it's a
+      // video, make it the only one playing. Binary search keeps this O(log n).
+      if (positions.length > 0) {
+        const center = scrollX + getViewportWidth() / 2;
+        let plo = 0, phi = positions.length - 1;
+        while (plo < phi) {
+          const mid = (plo + phi) >> 1;
+          if (positions[mid].x + positions[mid].width / 2 < center) plo = mid + 1;
+          else phi = mid;
+        }
+        let nearest = plo;
+        if (plo > 0) {
+          const prevDist = Math.abs((positions[plo - 1].x + positions[plo - 1].width / 2) - center);
+          const currDist = Math.abs((positions[plo].x + positions[plo].width / 2) - center);
+          if (prevDist < currDist) nearest = plo - 1;
+        }
+        const nearestItem = positions[nearest].item;
+        activateVideo(nearestItem.type === 'video' && nearestItem.videoSrc ? nearestItem.id : null);
+      }
+
       rafRef.current = requestAnimationFrame(raf);
     }
 
     rafRef.current = requestAnimationFrame(raf);
 
     return () => {
-      removeListenerSafely(container, 'wheel', handleScrollGestureAudio);
-      removeListenerSafely(container, 'touchmove', handleScrollGestureAudio);
-      removeListenerSafely(window, 'wheel', handleScrollGestureAudio);
-      removeListenerSafely(window, 'touchmove', handleScrollGestureAudio);
       removeListenerSafely(window, 'touchstart', markAudioInteraction);
       removeListenerSafely(window, 'pointerdown', markAudioInteraction);
       removeListenerSafely(window, 'mousedown', markAudioInteraction);
-      removeListenerSafely(container, 'touchstart', markAudioInteraction);
-      removeListenerSafely(container, 'pointerdown', markAudioInteraction);
-      removeListenerSafely(window, 'keydown', markAudioInteraction);
+      removeListenerSafely(window, 'resize', initRulerCanvas);
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('pointerdown', handlePointerDown);
+      container.removeEventListener('pointermove', handlePointerMove);
+      container.removeEventListener('pointerup', handlePointerUp);
+      container.removeEventListener('pointercancel', handlePointerUp);
+      window.removeEventListener('keydown', handleKeyDown);
 
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      lenis.destroy();
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [positions, ticks, playTick, unlockAudio]);
-
-  // Clean up old ticks from recent history
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now();
-      setRecentTicks(prev => {
-        const newMap = new Map(prev);
-        let hasChanges = false;
-        
-        // Remove ticks older than 500ms
-        for (const [tickIndex, timestamp] of newMap.entries()) {
-          if (now - timestamp > 500) {
-            newMap.delete(tickIndex);
-            hasChanges = true;
-          }
-        }
-        
-        return hasChanges ? newMap : prev;
-      });
-    }, 100); // Check every 100ms
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  // Generate editorial timeline ruler
-  const generateRuler = (): ReactElement[] => {
-    if (visibleTicks.length === 0) return [];
-    
-    const renderedTicks: ReactElement[] = [];
-    const now = Date.now();
-
-    visibleTicks.forEach((tick) => {
-      const isActive = tick.index === activeTickIndex;
-      const wasRecentlyActive = recentTicks.has(tick.index);
-      const timeSinceActive = wasRecentlyActive ? now - (recentTicks.get(tick.index) || 0) : 0;
-      
-      // Calculate tick properties
-      const baseHeight = 16; // All regular ticks
-      const monthHeight = 24; // Month start ticks slightly taller
-      const activeHeight = 40; // Current active tick
-      
-      let tickHeight = baseHeight;
-      let tickColor = '#d1d5db'; // All same color (light grey)
-      
-      // ONLY the active tick is highlighted
-      if (isActive) {
-        tickHeight = activeHeight;
-        tickColor = '#000000'; // Black
-      } else if (wasRecentlyActive && timeSinceActive < 500) {
-        // Wave effect - stays 1px wide
-        const progress = timeSinceActive / 500;
-        const waveHeight = baseHeight + ((activeHeight - baseHeight) * (1 - progress));
-        tickHeight = waveHeight;
-        tickColor = '#d1d5db';
-      } else if (tick.isMonthStart) {
-        // Month start - slightly taller, but SAME thickness
-        tickHeight = monthHeight;
-        tickColor = '#d1d5db';
-      }
-      // All other ticks: tickHeight = baseHeight
-
-      // Use X position in key to ensure uniqueness
-      const uniqueKey = `tick-${tick.index}`;
-
-      renderedTicks.push(
-        <div
-          key={uniqueKey}
-          className="absolute flex flex-col items-center"
-          style={{ left: `${tick.x}px`, bottom: 0 }}
-        >
-          {/* Tick line - static width via className, animate only height and color */}
-          <motion.div
-            key={`line-${uniqueKey}-${isActive ? 'active' : 'inactive'}`}
-            className="w-[1.5px]"
-            initial={{ height: baseHeight }}
-            animate={{
-              height: tickHeight,
-              backgroundColor: tickColor,
-            }}
-            transition={{
-              height: { duration: 0.2, ease: "easeOut" },
-              backgroundColor: { duration: 0.15, ease: "easeOut" }
-            }}
-          />
-          
-          {/* Month label (only for months with media) */}
-          {tick.monthLabel && (
-            <div className="absolute -bottom-7 text-[10px] font-bold text-gray-500 tracking-wider whitespace-nowrap">
-              {tick.monthLabel}
-            </div>
-          )}
-        </div>
-      );
-    });
-
-    return renderedTicks;
-  };
+  }, [positions, ticks, totalWidth, firstMonthTickIndex, playTick, unlockAudio]);
 
   return (
     <div
@@ -1043,14 +1109,13 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         pointerEvents: isTimelineVisible ? 'auto' : 'none',
         backgroundImage: `
           linear-gradient(to right, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
-          url(/assets/linedpaper.jpg),
-          url(/assets/callmeifyougetlost.png)
+          url(/assets/linedpaper.webp),
+          url(/assets/callmeifyougetlost.webp)
         `,
         backgroundBlendMode: 'screen, multiply, normal',
         backgroundSize: '100% 100%, 20% 20%, 100% auto',
         backgroundRepeat: 'repeat, repeat, repeat-x',
         backgroundPosition: '0 0, 0 0, 0 0',
-        backgroundAttachment: 'fixed, fixed, fixed',
       }}
     >
       {/* Note Palette */}
@@ -1085,37 +1150,30 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
         </div>
       </div>
 
+      {/* Scroll container: overflow-hidden, events handled natively */}
       <div
         ref={scrollContainerRef}
-        className="h-full w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
-        onWheelCapture={unlockAudio}
-        onTouchStartCapture={unlockAudio}
-        onPointerDownCapture={unlockAudio}
-        onMouseDownCapture={unlockAudio}
-        style={{
-          cursor: placementColor ? 'crosshair' : 'default',
-        }}
+        className="h-full w-full overflow-hidden"
+        style={{ cursor: placementColor ? 'crosshair' : 'grab' }}
       >
-        {/* Scrollable canvas */}
-        <div 
+        {/* Inner track: single translateX driven by RAF loop */}
+        <div
           ref={canvasRef}
-          className="relative h-full" 
-          style={{ width: `${totalWidth}px` }}
+          className="absolute top-0 left-0 h-full"
+          style={{ width: `${totalWidth}px`, willChange: 'transform' }}
           onClick={handleCanvasClick}
         >
-          
+
           {/* Floating images - equal spacing */}
           {visiblePositions.map((pos) => {
             const item = pos.item;
             const hasFailedVideo = failedVideoIds.has(item.id);
+            const isInInitialViewport = pos.x < viewportWidth * 1.5;
 
             return (
-              <motion.div
+              <div
                 key={item.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: Math.min(pos.index * 0.015, 0.25) }}
-                className="absolute z-30 will-change-transform"
+                className="absolute z-30 animate-fade-in"
                 style={{
                   left: `${pos.x}px`,
                   top: '50%',
@@ -1130,13 +1188,16 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                 {/* Image or Video */}
                 {item.type === 'video' && item.videoSrc && !hasFailedVideo ? (
                   <video
+                    ref={(el) => {
+                      if (el) videoElsRef.current.set(item.id, el);
+                      else videoElsRef.current.delete(item.id);
+                    }}
                     src={item.videoSrc}
                     className="h-full w-full object-cover"
-                    autoPlay
                     loop
                     muted
                     playsInline
-                    preload="metadata"
+                    preload="none"
                     poster={item.src}
                     onLoadedData={() => handleVideoLoaded(item.id)}
                     onError={() => handleVideoError(item)}
@@ -1149,9 +1210,9 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
                       fill
                       sizes={`${Math.ceil(pos.width)}px`}
                       className="object-cover"
-                      quality={82}
-                      priority={true}
-                      loading="eager"
+                      quality={75}
+                      priority={isInInitialViewport}
+                      loading={isInInitialViewport ? 'eager' : 'lazy'}
                       decoding="async"
                     />
                   </>
@@ -1159,32 +1220,22 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
 
                 {/* Hover labels */}
                 {hoveredIndex === pos.index && !placementColor && (
-                  <>
-                    {/* Date below image */}
-                    <motion.div
-                      initial={{ y: 8, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{
-                        duration: 0.45,
-                        ease: [0.25, 0.46, 0.45, 0.94],
-                        delay: 0.05,
-                      }}
-                      className="absolute -bottom-7 left-0 text-left"
-                      style={{
-                        fontSize: '11px',
-                        pointerEvents: 'none',
-                      }}
-                    >
-                      <div className="text-gray-500">{formatDate(item.date)}</div>
-                    </motion.div>
-                  </>
+                  <div
+                    className="absolute -bottom-7 left-0 text-left animate-fade-in"
+                    style={{
+                      fontSize: '11px',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <div className="text-gray-500">{formatDate(item.date)}</div>
+                  </div>
                 )}
-              </motion.div>
+              </div>
             );
           })}
 
-          {/* Sticky Notes - rendered on top of all images */}
-          {notes.map(note => (
+          {/* Sticky Notes - rendered on top of all images (virtualized to the window) */}
+          {visibleNotes.map(note => (
             <StickyNote
               key={note.id}
               id={note.id}
@@ -1201,15 +1252,22 @@ export default function TimelineCarousel({ items }: TimelineCarouselProps) {
               canvasBounds={{ width: totalWidth, height: viewportHeight }}
             />
           ))}
-
-          {/* Bottom timeline ruler */}
-          <div className="absolute bottom-12 left-0 h-24 z-10" style={{ width: `${totalWidth}px` }}>
-            <div className="relative h-full">
-              {generateRuler()}
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Canvas ruler: fixed to viewport, drawn every RAF frame — zero DOM overhead */}
+      <canvas
+        ref={rulerCanvasRef}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '96px',
+          pointerEvents: 'none',
+          zIndex: 10,
+        }}
+      />
     </div>
   );
 }

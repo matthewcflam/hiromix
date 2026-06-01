@@ -36,14 +36,14 @@ export default function RootLayout({
     <html lang="en" className={cn(inter.variable, reenieBeanie.variable, roboto.variable, "font-sans")}>
       <head>
         {/* Preload critical assets */}
-        <link rel="preload" as="image" href="/assets/callmeifyougetlost.png" />
+        <link rel="preload" as="image" href="/assets/callmeifyougetlost.webp" type="image/webp" />
         {/* Preconnect to external CDNs */}
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         {/* Prefetch adjacent timeline images for smooth navigation */}
         <link rel="prefetch" as="image" href="/assets/yellownote.jpg" />
         <link rel="prefetch" as="image" href="/assets/greennote.jpg" />
-        <link rel="prefetch" as="image" href="/assets/linedpaper.jpg" />
+        <link rel="prefetch" as="image" href="/assets/linedpaper.webp" type="image/webp" />
       </head>
       <body className="font-sans">
         {children}

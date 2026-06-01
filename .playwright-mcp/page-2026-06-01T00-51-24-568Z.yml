@@ -1,0 +1,31 @@
+- main [ref=e2]:
+  - generic:
+    - generic:
+      - generic:
+        - heading "Happy 6 months!!!" [level=1]:
+          - generic:
+            - generic: Happy 6 months!!!
+    - generic:
+      - generic:
+        - generic:
+          - button "Yellow Note":
+            - generic:
+              - generic: Yellow Note
+          - button "Green Note":
+            - generic:
+              - generic: Green Note
+          - button "Pink Note":
+            - generic:
+              - generic: Pink Note
+          - button "Toggle Delete":
+            - generic:
+              - generic: Toggle Delete
+      - generic:
+        - generic "Sticky notes sync status": "Notes: Connecting"
+      - img "Content" [ref=e4]
+  - generic "Website loading screen" [ref=e5]:
+    - generic [ref=e8]:
+      - img "Loading animation" [ref=e9]
+      - generic [ref=e10]:
+        - paragraph [ref=e11]: Loading
+        - paragraph [ref=e12]: 0%

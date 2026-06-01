@@ -1,0 +1,243 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic:
+      - generic:
+        - generic:
+          - heading "Happy 6 months!!!" [level=1]:
+            - generic:
+              - generic: Happy 6 months!!!
+      - generic [ref=e13]:
+        - generic [ref=e15]:
+          - button "Yellow Note" [ref=e16] [cursor=pointer]:
+            - generic:
+              - generic: Yellow Note
+          - button "Green Note" [ref=e24] [cursor=pointer]:
+            - generic:
+              - generic: Green Note
+          - button "Pink Note" [ref=e32] [cursor=pointer]:
+            - generic:
+              - generic: Pink Note
+          - button "Toggle Delete" [ref=e40] [cursor=pointer]:
+            - generic:
+              - generic: Toggle Delete
+        - generic:
+          - generic "Live sync connected": "Notes: Live"
+        - generic [ref=e45]:
+          - img "Content" [ref=e47]
+          - img "Content" [ref=e49]
+          - img "Content" [ref=e51]
+          - img "Content" [ref=e53]
+          - img "Content" [ref=e57]
+          - img "Content" [ref=e59]
+          - img "Content" [ref=e61]
+          - img "Content" [ref=e63]
+          - img "Content" [ref=e65]
+          - img "Content" [ref=e69]
+          - generic [ref=e71]:
+            - textbox "Type here..." [ref=e72]: anne in da wild
+            - generic "Drag handle - click and drag to move this note" [ref=e73]:
+              - img [ref=e74]
+          - generic [ref=e77]:
+            - textbox "Type here..." [ref=e78]: a dinner for two chickennnnnnnnnn has my chicken grown on you?
+            - generic "Drag handle - click and drag to move this note" [ref=e79]:
+              - img [ref=e80]
+          - generic [ref=e83]:
+            - textbox "Type here..." [ref=e84]: yes he is im really da cutest (except for you)
+            - generic "Drag handle - click and drag to move this note" [ref=e85]:
+              - img [ref=e86]
+          - generic [ref=e89]:
+            - textbox "Type here..." [ref=e90]: wow this film looks good
+            - generic "Drag handle - click and drag to move this note" [ref=e91]:
+              - img [ref=e92]
+          - generic [ref=e95]:
+            - textbox "Type here..." [ref=e96]: "updates: explore!!! i love you"
+            - generic "Drag handle - click and drag to move this note" [ref=e97]:
+              - img [ref=e98]
+          - generic [ref=e101]:
+            - textbox "Type here..." [ref=e102]
+            - generic "Drag handle - click and drag to move this note" [ref=e103]:
+              - img [ref=e104]
+          - generic [ref=e107]:
+            - textbox "Type here..." [ref=e108]
+            - generic "Drag handle - click and drag to move this note" [ref=e109]:
+              - img [ref=e110]
+          - generic [ref=e113]:
+            - textbox "Type here..." [ref=e114]
+            - generic "Drag handle - click and drag to move this note" [ref=e115]:
+              - img [ref=e116]
+          - generic [ref=e119]:
+            - textbox "Type here..." [ref=e120]
+            - generic "Drag handle - click and drag to move this note" [ref=e121]:
+              - img [ref=e122]
+          - generic [ref=e125]:
+            - textbox "Type here..." [ref=e126]
+            - generic "Drag handle - click and drag to move this note" [ref=e127]:
+              - img [ref=e128]
+          - generic [ref=e131]:
+            - textbox "Type here..." [ref=e132]
+            - generic "Drag handle - click and drag to move this note" [ref=e133]:
+              - img [ref=e134]
+          - generic [ref=e137]:
+            - textbox "Type here..." [ref=e138]
+            - generic "Drag handle - click and drag to move this note" [ref=e139]:
+              - img [ref=e140]
+          - generic [ref=e143]:
+            - textbox "Type here..." [ref=e144]
+            - generic "Drag handle - click and drag to move this note" [ref=e145]:
+              - img [ref=e146]
+          - generic [ref=e149]:
+            - textbox "Type here..." [ref=e150]
+            - generic "Drag handle - click and drag to move this note" [ref=e151]:
+              - img [ref=e152]
+          - generic [ref=e155]:
+            - textbox "Type here..." [ref=e156]
+            - generic "Drag handle - click and drag to move this note" [ref=e157]:
+              - img [ref=e158]
+          - generic [ref=e161]:
+            - textbox "Type here..." [ref=e162]
+            - generic "Drag handle - click and drag to move this note" [ref=e163]:
+              - img [ref=e164]
+          - generic [ref=e167]:
+            - textbox "Type here..." [ref=e168]
+            - generic "Drag handle - click and drag to move this note" [ref=e169]:
+              - img [ref=e170]
+          - generic [ref=e173]:
+            - textbox "Type here..." [ref=e174]
+            - generic "Drag handle - click and drag to move this note" [ref=e175]:
+              - img [ref=e176]
+          - generic [ref=e179]:
+            - textbox "Type here..." [ref=e180]
+            - generic "Drag handle - click and drag to move this note" [ref=e181]:
+              - img [ref=e182]
+          - generic [ref=e185]:
+            - textbox "Type here..." [ref=e186]
+            - generic "Drag handle - click and drag to move this note" [ref=e187]:
+              - img [ref=e188]
+          - generic [ref=e191]:
+            - textbox "Type here..." [ref=e192]
+            - generic "Drag handle - click and drag to move this note" [ref=e193]:
+              - img [ref=e194]
+          - generic [ref=e197]:
+            - textbox "Type here..." [ref=e198]: "|\\__/,| (`\\ _.|o o |_ ) ) -(((---(((--------"
+            - generic "Drag handle - click and drag to move this note" [ref=e199]:
+              - img [ref=e200]
+          - generic [ref=e203]:
+            - textbox "Type here..." [ref=e204]: your move in in the sunlight your hair still looks like this
+            - generic "Drag handle - click and drag to move this note" [ref=e205]:
+              - img [ref=e206]
+          - generic [ref=e209]:
+            - textbox "Type here..." [ref=e210]: us
+            - generic "Drag handle - click and drag to move this note" [ref=e211]:
+              - img [ref=e212]
+          - generic [ref=e215]:
+            - textbox "Type here..." [ref=e216]: monty :( the day things started to get more obvious
+            - generic "Drag handle - click and drag to move this note" [ref=e217]:
+              - img [ref=e218]
+          - generic [ref=e221]:
+            - textbox "Type here..." [ref=e222]: i had so much fun last summer but this summer will be even better
+            - generic "Drag handle - click and drag to move this note" [ref=e223]:
+              - img [ref=e224]
+          - generic [ref=e227]:
+            - textbox "Type here..." [ref=e228]: flowers for you i used to always try and get the open ones
+            - generic "Drag handle - click and drag to move this note" [ref=e229]:
+              - img [ref=e230]
+          - generic [ref=e233]:
+            - textbox "Type here..." [ref=e234]: but the ones that last are also so nice
+            - generic "Drag handle - click and drag to move this note" [ref=e235]:
+              - img [ref=e236]
+          - generic [ref=e239]:
+            - textbox "Type here..." [ref=e240]: sensory overload your bed has so many friends on it
+            - generic "Drag handle - click and drag to move this note" [ref=e241]:
+              - img [ref=e242]
+          - generic [ref=e245]:
+            - textbox "Type here..." [ref=e246]: i called this "tsmogging" inside the website do i look cute!
+            - generic "Drag handle - click and drag to move this note" [ref=e247]:
+              - img [ref=e248]
+          - generic [ref=e251]:
+            - textbox "Type here..." [ref=e252]: if you said no earlier you have to say yes now look at us!!!!!
+            - generic "Drag handle - click and drag to move this note" [ref=e253]:
+              - img [ref=e254]
+          - generic [ref=e257]:
+            - textbox "Type here..." [ref=e258]: what da tiramisu?
+            - generic "Drag handle - click and drag to move this note" [ref=e259]:
+              - img [ref=e260]
+          - generic [ref=e263]:
+            - textbox "Type here..." [ref=e264]: before you did this, i would imagine you doing this in my head
+            - generic "Drag handle - click and drag to move this note" [ref=e265]:
+              - img [ref=e266]
+          - generic [ref=e269]:
+            - textbox "Type here..." [ref=e270]: im sorry for being grumpy that day.. my feet really hurt and i was just feeling down
+            - generic "Drag handle - click and drag to move this note" [ref=e271]:
+              - img [ref=e272]
+          - generic [ref=e275]:
+            - textbox "Type here..." [ref=e276]: "unrelated note: i want to debate how good nizu really is with you on our cafe list"
+            - generic "Drag handle - click and drag to move this note" [ref=e277]:
+              - img [ref=e278]
+          - generic [ref=e281]:
+            - textbox "Type here..." [ref=e282]: your ballerinas came in clutch this day
+            - generic "Drag handle - click and drag to move this note" [ref=e283]:
+              - img [ref=e284]
+          - generic [ref=e287]:
+            - textbox "Type here..." [ref=e288]: caterpillar i tried to convince my mom NOT to get this jacket
+            - generic "Drag handle - click and drag to move this note" [ref=e289]:
+              - img [ref=e290]
+          - generic [ref=e293]:
+            - textbox "Type here..." [ref=e294]: koala
+            - generic "Drag handle - click and drag to move this note" [ref=e295]:
+              - img [ref=e296]
+          - generic [ref=e299]:
+            - textbox "Type here..." [ref=e300]: to eat or be eaten?
+            - generic "Drag handle - click and drag to move this note" [ref=e301]:
+              - img [ref=e302]
+          - generic [ref=e305]:
+            - textbox "Type here..." [ref=e306]: oyster
+            - generic "Drag handle - click and drag to move this note" [ref=e307]:
+              - img [ref=e308]
+          - generic [ref=e311]:
+            - textbox "Type here..." [ref=e312]: this might be one of my favourite photos of you ever
+            - generic "Drag handle - click and drag to move this note" [ref=e313]:
+              - img [ref=e314]
+          - generic [ref=e317]:
+            - textbox "Type here..." [ref=e318]: snow strippers :( this was a great vlog i will show you with audio
+            - generic "Drag handle - click and drag to move this note" [ref=e319]:
+              - img [ref=e320]
+          - generic [ref=e323]:
+            - textbox "Type here..." [ref=e324]: check it out the delete button!!! they get nervous don't they
+            - generic "Drag handle - click and drag to move this note" [ref=e325]:
+              - img [ref=e326]
+          - generic [ref=e329]:
+            - textbox "Type here..." [ref=e330]: check out the tunes!!! ->
+            - generic "Drag handle - click and drag to move this note" [ref=e331]:
+              - img [ref=e332]
+          - generic [ref=e335]:
+            - textbox "Type here..." [ref=e336]: Gurt I lurb you guess which song i listen to
+            - generic "Drag handle - click and drag to move this note" [ref=e337]:
+              - img [ref=e338]
+          - generic [ref=e341]:
+            - textbox "Type here..." [ref=e342]: yo!! I love you yo
+            - generic "Drag handle - click and drag to move this note" [ref=e343]:
+              - img [ref=e344]
+          - generic [ref=e347]:
+            - textbox "Type here..." [ref=e348]
+            - generic "Drag handle - click and drag to move this note" [ref=e349]:
+              - img [ref=e350]
+      - generic [ref=e354]:
+        - generic [ref=e356]:
+          - generic [ref=e357]:
+            - generic [ref=e358]: NOW PLAYING
+            - generic [ref=e359]: ACTIVE
+          - generic [ref=e360]:
+            - generic [ref=e361]: 00:35
+            - generic [ref=e362]: 03:44
+          - generic [ref=e363]:
+            - img "MUSIC" [ref=e365]
+            - generic [ref=e366]:
+              - paragraph [ref=e367]: Playboi Carti
+              - paragraph [ref=e368]: CHARGE DEM HOES A FEE
+        - generic [ref=e369]:
+          - button "Toggle queue" [ref=e370] [cursor=pointer]: MENU
+          - button "Previous track" [ref=e371] [cursor=pointer]
+          - button "Next track" [ref=e375] [cursor=pointer]
+          - button "Pause" [ref=e379] [cursor=pointer]: "||"
+          - button "Toggle volume slider" [ref=e380] [cursor=pointer]: VOL
+  - alert [ref=e381]
